@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+
+# 用户数据（每人一份）
+data/users/
+data/shared/anonymous/
+
+# 输出文件
+output/
+
+# 日志
+data/logs/
+
+# 环境
+.env
+.venv
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store

@@ -1,0 +1,37 @@
+# 核心依赖
+pyyaml>=6.0
+requests>=2.28
+
+# LLM Provider
+openai>=1.0
+
+# RAG / 知识系统
+scikit-learn>=1.0    # TF-IDF
+
+# CLI 界面
+colorama>=0.4
+rich>=13.0
+
+# Web 界面
+fastapi>=0.100
+uvicorn>=0.23
+jinja2>=3.1
+python-multipart>=0.0.5
+websockets>=11.0
+
+# Desktop GUI
+customtkinter>=5.2
+Pillow>=10.0
+
+# 视频处理（内容工坊 skill 需要）
+mediapipe>=0.10.0
+opencv-python>=4.8
+moviepy>=1.0.3
+numpy>=1.24
+edge-tts>=6.0
+
+# 搜索
+httpx>=0.25
+
+# 工具
+aiofiles>=23.0

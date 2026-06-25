@@ -1,0 +1,79 @@
+name: xhs-content-factory
+version: 2.0.0
+description: 小红书穿搭视频自动剪辑合成 — 骨架智能剔除坏帧 + Kimi视觉分析 + DeepSeek文案 + MoviePy合成
+author: 工具猫
+triggers:
+  - 穿搭
+  - 出片
+  - 视频剪辑
+  - 小红书
+  - 做视频
+  - 合成
+  - 骨架剪辑
+  - 坏帧剔除
+  - 卡顿检测
+  - 换装
+  - outfit
+  - 穿衣
+  - 素材
+
+tools:
+  clip_videos:
+    description: 骨架智能剪辑 — 用MediaPipe Pose检测人物骨架，根据剔除规则自动去掉坏帧(骨架扭曲/不完整/卡顿)，提取最优片段
+    params:
+      paths: {type: list, description: 视频文件路径列表}
+      duration: {type: number, description: 目标视频时长(秒)}
+    requires_confirm: false
+  vision_analyze:
+    description: 视觉分析 — 用Kimi K2.5看图，分析服装风格/颜色/场景/动作，返回画面描述
+    params:
+      paths: {type: list, description: 图片/视频文件路径列表}
+    requires_confirm: false
+  generate_copy:
+    description: 生成小红书文案 — 结合参考库风格和视觉分析结果，生成标题+正文+标签
+    params:
+      topic: {type: string, description: 内容主题}
+      context: {type: string, description: 素材分析上下文}
+      visual_context: {type: string, description: 视觉分析结果}
+    requires_confirm: false
+  compose_video:
+    description: 合成最终视频 — 拼接剪辑好的片段，加漫威风格开头+转场+BGM+配音，输出MP4
+    params:
+      clips: {type: list, description: 剪辑好的视频片段路径}
+      settings: {type: dict, description: 合成参数(时长/分辨率/BGM/配音等)}
+    requires_confirm: true
+  generate_card:
+    description: 生成小红书推广封面/卡片 — 3:4竖版1080x1440，深色科技风或古风
+    params:
+      text: {type: string, description: 卡片文字内容}
+      style: {type: dict, description: 风格参数(色系/字体/布局)}
+    requires_confirm: true
+  search_web:
+    description: 网络搜索 — 通过SearXNG搜索穿搭趋势/热门话题
+    params:
+      query: {type: string, description: 搜索关键词}
+    requires_confirm: false
+  synthesize_tts:
+    description: 配音生成 — Edge TTS将文案转为语音
+    params:
+      text: {type: string, description: 配音文本}
+      voice: {type: string, description: 音色(默认zh-CN-XiaoxiaoNeural)}
+    requires_confirm: false
+
+references:
+  - references/风格指南.md
+  - references/剔除规则.md
+  - references/保留规则.md
+  - references/避坑清单.md
+  - references/历史帖子.md
+  - references/BGM偏好.yaml
+
+install:
+  pip:
+    - mediapipe>=0.10.0
+    - opencv-python>=4.8
+    - moviepy>=1.0.3
+    - edge-tts>=6.0
+    - numpy>=1.24
+
+dependencies: []
