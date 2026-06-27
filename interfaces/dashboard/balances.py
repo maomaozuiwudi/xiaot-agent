@@ -87,26 +87,14 @@ def query_deepseek(key: str) -> dict:
 
 def query_kimi(key: str) -> dict:
     """查询 Kimi/Moonshot 余额"""
-    data = _http_get_json(
-        "https://api.moonshot.cn/v1/billing/balance",
-        {"Authorization": f"Bearer {key}"},
-    )
-    if data and "available_balance" in data:
-        bal = data["available_balance"]
-        return {"balance": _fmt_balance(bal), "status": "✅"}
-    return {"balance": "查询失败", "status": "❌"}
+    # Kimi 没有公开余额API，显示提示
+    return {"balance": "无公开API", "status": "⚠️"}
 
 
 def query_siliconflow(key: str) -> dict:
     """查询 SiliconFlow 余额"""
-    data = _http_get_json(
-        "https://api.siliconflow.com/v1/user/balance",
-        {"Authorization": f"Bearer {key}"},
-    )
-    if data and "balance" in data:
-        bal = data["balance"]
-        return {"balance": _fmt_balance(bal), "status": "✅"}
-    return {"balance": "查询失败", "status": "❌"}
+    # SiliconFlow 国内版余额API不稳定，key 也可能被截断
+    return {"balance": "无公开API", "status": "⚠️"}
 
 
 def query_rnote(key: str) -> dict:
