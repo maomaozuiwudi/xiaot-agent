@@ -1,6 +1,17 @@
-# 🐱 工具猫 AI — 小红书内容工坊 Agent
+# 🐱 小t Agent — 小红书内容创作助手
 
-一个**越用越懂你的 AI 内容创作助手**。支持 DeepSeek/豆包/GPT/Kimi/通义千问 等多种模型，多人共享记忆，隐私自选。
+一个**越用越懂你**的 AI 内容创作助手。支持 DeepSeek/豆包/GPT/Kimi 等多种模型，多人共享记忆，隐私自选。
+
+```bash
+# 一键安装
+pip install xiaot-agent
+
+# 装完直接在终端启动
+xiaot
+
+# 也可以装完整版（含视频剪辑+Web+GUI）
+pip install "xiaot-agent[all]"
+```
 
 ```
      ╭──────────────────────╮
@@ -16,16 +27,49 @@
 
 ## 🚀 快速开始
 
-```bash
-# 1. 克隆
-git clone https://github.com/maomaozuiwudi/xhs-content-factory-agent.git
-cd xhs-content-factory-agent
+### 方式一：pip 安装（推荐）
 
-# 2. 装依赖
-pip install -r requirements.txt
+```bash
+# 1. 安装
+pip install xiaot-agent
+
+# 2. 创建配置
+cp config.example.yaml config.yaml
+# 编辑 config.yaml 填入你的 API Key
 
 # 3. 启动
-python main.py
+xiaot
+```
+
+可选功能按需安装：
+```bash
+pip install "xiaot-agent[web]"     # + Web UI（FastAPI）
+pip install "xiaot-agent[gui]"     # + 桌面 GUI（CustomTkinter）
+pip install "xiaot-agent[video]"   # + 视频剪辑（MediaPipe + MoviePy）
+pip install "xiaot-agent[all]"     # 全部功能
+```
+
+### 方式二：从 GitHub 安装
+
+```bash
+pip install git+https://github.com/maomaozuiwudi/xiaot-agent.git
+```
+
+### 方式三：本地开发
+
+```bash
+git clone https://github.com/maomaozuiwudi/xiaot-agent.git
+cd xiaot-agent
+pip install -e .
+xiaot
+```
+
+### 启动参数
+
+```bash
+xiaot              # CLI 终端对话模式（默认）
+xiaot --web        # Web 服务模式（浏览器打开）
+xiaot --gui        # Desktop GUI 模式
 ```
 
 启动后根据提示：
@@ -70,7 +114,7 @@ python main.py
 
 ## 🧩 技能系统
 
-```bash
+```
 /skill list              # 查看已安装技能
 /skill install <路径>    # 安装技能
 /skill uninstall <名称>  # 卸载技能
@@ -84,12 +128,15 @@ agent/
 ├─ guard/           # 守卫系统（Critic+幻觉防御）
 ├─ knowledge/       # 知识系统（RAG+记忆管理）
 ├─ skills/          # 技能系统（可安装/卸载）
-├─ evolution/        # 进化引擎（审美+剪辑自进化）
+├─ evolution/       # 进化引擎（审美+剪辑自进化）
 ├─ interfaces/      # 交互界面（CLI/Web/GUI）
-├─ config.yaml      # 配置
-└─ main.py          # 入口
+├─ config.yaml      # 配置（需自行创建）
+├─ main.py          # 入口
+└─ xiaot_agent_entry.py  # pip 终端入口
 ```
 
 ## 🐱 关于
 
 工具猫 (maomaozuiwudi) · MIT License
+
+GitHub: https://github.com/maomaozuiwudi/xiaot-agent
