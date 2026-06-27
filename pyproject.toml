@@ -19,29 +19,18 @@ dependencies = [
     "rich>=13.0",
     "httpx>=0.25",
     "aiofiles>=23.0",
-]
-
-[project.optional-dependencies]
-web = [
     "fastapi>=0.100",
     "uvicorn>=0.23",
     "jinja2>=3.1",
     "python-multipart>=0.0.5",
     "websockets>=11.0",
-]
-gui = [
     "customtkinter>=5.2",
     "Pillow>=10.0",
-]
-video = [
     "mediapipe>=0.10.0",
     "opencv-python>=4.8",
     "moviepy>=1.0.3",
     "numpy>=1.24",
     "edge-tts>=6.0",
-]
-all = [
-    "xiaot-agent[web,gui,video]",
 ]
 
 [project.urls]
