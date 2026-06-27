@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon.svg">
+<title>小t Agent · 仪表盘 v2</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: #0a0e17;
+    color: #e0e6f0;
+    min-height: 100vh;
+    padding: 16px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; padding-bottom: 12px;
+    border-bottom: 1px solid #1a2340;
+  }
+  .header h1 {
+    font-size: 20px; font-weight: 600;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header .time { font-size: 13px; color: #8892b0; font-variant-numeric: tabular-nums; }
+
+  /* ── Section titles ── */
+  .section-title {
+    font-size: 14px; font-weight: 600; color: #94a3b8;
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-title .badge {
+    font-size: 11px; background: #1e293b; padding: 2px 8px;
+    border-radius: 10px; color: #8892b0; font-weight: 400;
+  }
+
+  /* ── Pipeline ── */
+  .pipeline-section {
+    background: #111827; border: 1px solid #1e293b; border-radius: 12px;
+    padding: 16px; margin-bottom: 16px;
+  }
+  .pipeline-title {
+    font-size: 13px; color: #94a3b8; margin-bottom: 12px;
+  }
+  .pipeline-flow {
+    display: flex; align-items: center; gap: 4px;
+    overflow-x: auto; padding: 8px 0 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .pipe-node {
+    display: flex; flex-direction: column; align-items: center;
+    min-width: 80px; flex-shrink: 0; position: relative;
+  }
+  .pipe-node .node-box {
+    width: 72px; height: 72px; border-radius: 12px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500; transition: all 0.3s;
+    border: 2px solid transparent; position: relative;
+    cursor: default;
+  }
+  .pipe-node .node-box .node-icon { font-size: 22px; margin-bottom: 3px; }
+  .pipe-node .node-box .node-label { font-size: 10px; white-space: nowrap; }
+  .pipe-node .node-box .node-agent { font-size: 9px; color: #8892b0; margin-top: 1px; }
+
+  .pipe-node .node-box.node-done { background: #064e3b; border-color: #34d399; }
+  .pipe-node .node-box.node-working { background: #1e3a5f; border-color: #60a5fa; }
+  .pipe-node .node-box.node-working::after {
+    content: ''; position: absolute; inset: -3px; border-radius: 14px;
+    border: 2px solid transparent;
+    border-top-color: #60a5fa; border-right-color: #60a5fa;
+    animation: spin 1.5s linear infinite;
+  }
+  .pipe-node .node-box.node-pending { background: #1e293b; border-color: #334155; opacity: 0.6; }
+  .pipe-node .node-box.node-failed { background: #450a0a; border-color: #f87171; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .pipe-arrow {
+    flex-shrink: 0; color: #334155; font-size: 18px; margin: 0 2px;
+  }
+
+  .pipe-detail {
+    font-size: 11px; color: #64748b; margin-top: 8px;
+    padding: 8px 10px; background: #0a0e17; border-radius: 8px;
+    display: none;
+  }
+  .pipe-detail.visible { display: block; }
+
+  /* ── Agent cards grid ── */
+  .agent-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 640px) { .agent-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 380px) { .agent-grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: #111827; border: 1px solid #1e293b; border-radius: 12px;
+    padding: 14px; position: relative; transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .card.running { border-color: #065f46; }
+  .card.offline { border-color: #7f1d1d; }
+  .card.working { border-color: #1e3a5f; box-shadow: 0 0 12px rgba(96, 165, 250, 0.15); }
+  .card-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  }
+  .card-icon { font-size: 24px; }
+  .card-info { flex: 1; min-width: 0; }
+  .card-title { font-size: 14px; font-weight: 600; }
+  .card-desc { font-size: 10px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .status-indicator {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; white-space: nowrap;
+  }
+  .dot {
+    width: 9px; height: 9px; border-radius: 50%; display: inline-block;
+    flex-shrink: 0;
+  }
+  .dot.green { background: #34d399; box-shadow: 0 0 6px #34d39980; animation: pulse 2s infinite; }
+  .dot.yellow { background: #fbbf24; box-shadow: 0 0 6px #fbbf2480; }
+  .dot.red { background: #f87171; box-shadow: 0 0 6px #f8717180; }
+  .dot.blue { background: #60a5fa; box-shadow: 0 0 6px #60a5fa80; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  .card-body { font-size: 12px; line-height: 1.7; color: #c8d0e0; }
+  .card-body .row { display: flex; justify-content: space-between; padding: 1px 0; }
+  .card-body .row .key { color: #64748b; }
+  .card-body .row .val { font-weight: 500; text-align: right; }
+  .card-task {
+    margin-top: 8px; padding: 6px 8px; background: #0a0e17; border-radius: 6px;
+    font-size: 11px; color: #94a3b8; line-height: 1.4;
+    min-height: 20px; word-break: break-all;
+  }
+  .card-task .task-label { color: #64748b; font-size: 10px; margin-bottom: 2px; }
+
+  /* ── Balances table ── */
+  .balances-section {
+    background: #111827; border: 1px solid #1e293b; border-radius: 12px;
+    padding: 16px; margin-bottom: 16px;
+  }
+  .bal-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+  .bal-table th {
+    text-align: left; padding: 8px 8px 6px 0; color: #64748b;
+    font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .bal-table td {
+    padding: 8px 8px 8px 0; border-top: 1px solid #1e293b;
+  }
+  .bal-table td:last-child { text-align: right; width: 60px; }
+  .bal-table .platform { font-weight: 500; }
+  .bal-table .balance { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .bal-table .status-icon { font-size: 14px; }
+
+  /* ── System stats bar ── */
+  .sys-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 400px) { .sys-bar { grid-template-columns: repeat(2, 1fr); } }
+  .stat-box {
+    background: #111827; border: 1px solid #1e293b; border-radius: 10px;
+    padding: 10px 12px; text-align: center;
+  }
+  .stat-box .label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+  .stat-box .value { font-size: 18px; font-weight: 700; margin-top: 3px; }
+  .stat-box .value.green { color: #34d399; }
+  .stat-box .value.yellow { color: #fbbf24; }
+  .stat-box .value.red { color: #f87171; }
+
+  /* ── Ports ── */
+  .ports-bar {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .port-tag {
+    background: #1e293b; padding: 5px 10px; border-radius: 6px;
+    font-size: 11px; font-family: monospace;
+  }
+  .port-tag .port { color: #60a5fa; }
+  .port-tag .svc { color: #a78bfa; margin-left: 5px; }
+
+  .footer {
+    text-align: center; margin-top: 16px; padding-top: 12px;
+    border-top: 1px solid #1a2340;
+    font-size: 10px; color: #4a5568;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { height: 4px; width: 4px; }
+  ::-webkit-scrollbar-track { background: #0a0e17; }
+  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🤖 小t Agent · 仪表盘</h1>
+  <span class="time" id="clock">--:--:--</span>
+</div>
+
+<!-- ═══ 第一区：管线图 ═══ -->
+<div class="pipeline-section">
+  <div class="section-title">📋 工作管线 <span class="badge" id="pipelineBadge">抽象</span></div>
+  <div class="pipeline-title" id="pipelineTitle"></div>
+  <div class="pipeline-flow" id="pipelineFlow">
+    <!-- 由 JS 渲染 -->
+  </div>
+  <div class="pipe-detail" id="pipeDetail"></div>
+</div>
+
+<!-- ═══ 第二区：Agent 状态卡 ═══ -->
+<div class="section-title">🤖 Agent 状态</div>
+<div class="agent-grid" id="agentGrid">
+  <!-- 由 JS 渲染 -->
+</div>
+
+<!-- ═══ 第三区：Key 余额 ═══ -->
+<div class="balances-section">
+  <div class="section-title">💰 API Key 余额</div>
+  <table class="bal-table">
+    <thead><tr><th>平台</th><th>余额</th><th></th></tr></thead>
+    <tbody id="balBody">
+      <tr><td colspan="3" style="color:#64748b;text-align:center;padding:16px;">加载中...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══ 第四区：系统资源 + 端口 ═══ -->
+<div class="section-title">🖥️ 系统资源</div>
+<div class="sys-bar" id="sysBar">
+  <div class="stat-box"><div class="label">CPU</div><div class="value" id="cpuVal">--</div></div>
+  <div class="stat-box"><div class="label">内存</div><div class="value" id="memVal">--</div></div>
+  <div class="stat-box"><div class="label">磁盘</div><div class="value" id="diskVal">--</div></div>
+  <div class="stat-box"><div class="label">进程数</div><div class="value" id="procVal">--</div></div>
+</div>
+
+<div class="ports-bar" id="portsBar">
+  <!-- 由 JS 渲染 -->
+</div>
+
+<div class="footer">小t Agent v2 · 每 3 秒自动刷新</div>
+
+<script>
+const AGENT_DEFS = [
+  {id:"nannan", icon:"🧠", label:"楠楠", subtitle:"Hermes · 主调度"},
+  {id:"cc",     icon:"⚡", label:"CC",     subtitle:"Claude Code · 执行"},
+  {id:"codex",  icon:"💻", label:"Codex",  subtitle:"Codex CLI · 编码"},
+  {id:"kimi",   icon:"👁️", label:"Kimi",   subtitle:"Kimi K2.5 · 视觉"},
+];
+
+const DEFAULT_PIPELINE_STEPS = [
+  {id:1, label:"📥 需求输入",   status:"pending", detail:""},
+  {id:2, label:"🧠 楠楠·调度",  status:"pending", detail:""},
+  {id:3, label:"⚡ 执行",       status:"pending", detail:""},
+  {id:4, label:"📊 汇总",      status:"pending", detail:""},
+  {id:5, label:"✅ 产出",      status:"pending", detail:""},
+];
+
+/* ─── Render Pipeline ─── */
+function renderPipeline(data) {
+  const flow = document.getElementById('pipelineFlow');
+  const detail = document.getElementById('pipeDetail');
+  const badge = document.getElementById('pipelineBadge');
+  const title = document.getElementById('pipelineTitle');
+
+  const pipeline = data.pipeline || {};
+  let steps = pipeline.steps;
+  const pTitle = pipeline.title || '';
+
+  if (!steps || steps.length === 0) {
+    steps = DEFAULT_PIPELINE_STEPS;
+    badge.textContent = '抽象';
+  } else {
+    badge.textContent = `共 ${steps.length} 步`;
+  }
+
+  title.textContent = pTitle ? `当前: ${pTitle}` : '';
+
+  let html = '';
+  steps.forEach((step, i) => {
+    const status = step.status || 'pending';
+    let cls = 'node-pending';
+    let statusLabel = '⚪ 待处理';
+    if (status === 'done') { cls = 'node-done'; statusLabel = '🟢 已完成'; }
+    else if (status === 'working') { cls = 'node-working'; statusLabel = '🟡 工作中'; }
+    else if (status === 'failed') { cls = 'node-failed'; statusLabel = '🔴 失败'; }
+
+    const agent = step.agent || '';
+    const label = step.label || `步骤 ${step.id}`;
+    const icon = step.icon || '';
+    const stepDetail = step.detail || '';
+
+    html += `<div class="pipe-node" data-idx="${i}" onclick="showPipeDetail(${i})">
+      <div class="node-box ${cls}">
+        <span class="node-icon">${icon || label.charAt(0)}</span>
+        <span class="node-label">${label}</span>
+        ${agent ? `<span class="node-agent">${agent}</span>` : ''}
+      </div>
+    </div>`;
+    if (i < steps.length - 1) {
+      html += `<span class="pipe-arrow">›</span>`;
+    }
+  });
+
+  flow.innerHTML = html;
+
+  // Store steps data for detail popup
+  flow._steps = steps;
+}
+
+function showPipeDetail(idx) {
+  const detail = document.getElementById('pipeDetail');
+  const steps = document.getElementById('pipelineFlow')._steps || [];
+  const step = steps[idx];
+  if (!step) return;
+
+  const status = step.status || 'pending';
+  const statusMap = { done:'🟢 已完成', working:'🟡 工作中', pending:'⚪ 待处理', failed:'🔴 失败' };
+  detail.innerHTML = `<strong>${step.label}</strong> · ${statusMap[status] || status}
+    ${step.detail ? '<br>📝 ' + step.detail : ''}
+    ${step.agent ? '<br>🤖 执行: ' + step.agent : ''}`;
+  detail.classList.add('visible');
+  setTimeout(() => detail.classList.remove('visible'), 5000);
+}
+
+/* ─── Render Agent Cards ─── */
+function renderCards(data) {
+  const grid = document.getElementById('agentGrid');
+  grid.innerHTML = AGENT_DEFS.map(def => {
+    const a = data.agents?.[def.id] || {};
+    const procStatus = a.status || 'offline';
+    const task = a.task || '';
+    const workStatus = a.work_status || 'idle';
+
+    // Determine dot color: process running + working = blue, running = green, offline = red
+    let dotClass = 'red';
+    let statusLabel = '离线';
+    let cardClass = 'card offline';
+    if (procStatus === 'running') {
+      if (workStatus === 'working') {
+        dotClass = 'blue';
+        statusLabel = '工作中';
+        cardClass = 'card working';
+      } else {
+        dotClass = 'green';
+        statusLabel = '待命中';
+        cardClass = 'card running';
+      }
+    }
+
+    const pids = (a.pids || []).join(', ') || '--';
+    const cpu = a.cpu?.toFixed(1) ?? '--';
+    const mem = a.mem?.toFixed(2) ?? '--';
+
+    return `<div class="${cardClass}">
+      <div class="card-header">
+        <span class="card-icon">${def.icon}</span>
+        <div class="card-info">
+          <div class="card-title">${def.label}</div>
+          <div class="card-desc">${def.subtitle}</div>
+        </div>
+        <div class="status-indicator">
+          <span class="dot ${dotClass}"></span>${statusLabel}
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row"><span class="key">PID</span><span class="val">${pids}</span></div>
+        <div class="row"><span class="key">CPU</span><span class="val">${cpu}%</span></div>
+        <div class="row"><span class="key">内存</span><span class="val">${mem}%</span></div>
+      </div>
+      <div class="card-task">
+        <div class="task-label">📌 任务</div>
+        ${task || '<span style="color:#64748b;">空闲中</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ─── Render Balances ─── */
+function renderBalances(data) {
+  const body = document.getElementById('balBody');
+  const balances = data.balances || {};
+  const entries = Object.entries(balances);
+  if (entries.length === 0) {
+    body.innerHTML = '<tr><td colspan="3" style="color:#64748b;text-align:center;padding:16px;">暂无余额数据</td></tr>';
+    return;
+  }
+  body.innerHTML = entries.map(([platform, info]) => {
+    const bal = info?.balance || '--';
+    const status = info?.status || '⚪';
+    return `<tr>
+      <td class="platform">${platform}</td>
+      <td class="balance">${bal}</td>
+      <td class="status-icon">${status}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ─── Render System ─── */
+function renderSystem(data) {
+  const sys = data.system || {};
+  document.getElementById('cpuVal').textContent = sys.cpu != null ? sys.cpu + '%' : '--';
+  document.getElementById('memVal').textContent = sys.memory != null ? sys.memory + '%' : '--';
+  document.getElementById('diskVal').textContent = sys.disk != null ? sys.disk + '%' : '--';
+  document.getElementById('procVal').textContent = sys.process_count ?? '--';
+
+  ['cpuVal','memVal','diskVal'].forEach(id => {
+    const el = document.getElementById(id);
+    const v = parseFloat(el.textContent) || 0;
+    el.className = 'value' + (v > 80 ? ' red' : v > 50 ? ' yellow' : ' green');
+  });
+}
+
+/* ─── Render Ports ─── */
+function renderPorts(data) {
+  const bar = document.getElementById('portsBar');
+  const ports = data.ports || [];
+  if (ports.length === 0) {
+    bar.innerHTML = '<span style="color:#4a5568;font-size:12px;">🔌 无活跃服务端口</span>';
+    return;
+  }
+  bar.innerHTML = ports.map(p =>
+    `<span class="port-tag"><span class="port">:${p.port}</span><span class="svc">${p.service}</span></span>`
+  ).join('');
+}
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString('zh-CN', {hour12:false});
+}
+
+async function poll() {
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    renderPipeline(data);
+    renderCards(data);
+    renderBalances(data);
+    renderSystem(data);
+    renderPorts(data);
+  } catch(e) {
+    console.error('Poll failed:', e);
+  }
+  updateClock();
+}
+
+// Initial render + auto poll
+poll();
+setInterval(poll, 3000);
+</script>
+</body>
+</html>
