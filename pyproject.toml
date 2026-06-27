@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=64"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "xiaot-agent"
@@ -53,3 +53,9 @@ xiaot = "xiaot_agent_entry:main"
 
 [tool.setuptools.packages.find]
 include = ["brain*", "guard*", "knowledge*", "skills*", "evolution*", "interfaces*"]
+
+[tool.setuptools]
+py-modules = ["main", "config_loader", "xiaot_agent_entry"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml", "*.md", "*.txt", "*.css", "*.js", "*.html"]
