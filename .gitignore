@@ -28,6 +28,7 @@ venv/
 # OS
 Thumbs.db
 .DS_Store
+nul
 
 # 敏感配置（含API Key）
 config.yaml
