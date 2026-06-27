@@ -51,24 +51,15 @@ def _start_cli():
 
 def _start_web():
     """启动 Web 服务模式"""
-    print("[Web] 启动 Web 服务...")
-    # Web 模式待实现
-    # from interfaces.web.server import run
-    # run()
-    print("[Web] 暂未实现，期待贡献！")
-    print("[Fallback] 切换到 CLI 模式...")
-    _start_cli()
+    print("[Web] 🐱 启动 Web 服务...")
+    from interfaces.web.server import run
+    run()
 
 
 def _start_gui():
     """启动 Desktop GUI 模式"""
-    print("[GUI] 启动桌面客户端...")
-    # GUI 模式待实现
-    # from interfaces.gui import run
-    # run()
-    print("[GUI] 暂未实现，期待贡献！")
-    print("[Fallback] 切换到 CLI 模式...")
-    _start_cli()
+    from interfaces.gui.app import run
+    run()
 
 
 if __name__ == "__main__":

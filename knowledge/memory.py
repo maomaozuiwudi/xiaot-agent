@@ -11,7 +11,7 @@ import json
 import time
 import hashlib
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 import yaml
 
 from config_loader import get, resolve_path
@@ -151,14 +151,76 @@ class MemoryManager:
         self.session_id = str(int(time.time()))
         self.short_term = []
         self._load_personal()
+        self._rag_engine = None  # RAG 引擎引用，注入后自动记录
+
+    def set_rag_engine(self, engine):
+        """注入 RAG 引擎，使用户消息自动写入知识库"""
+        self._rag_engine = engine
+
+    def _record_user_to_rag(self, content):
+        """将用户有实质内容的输入自动写入 RAG 索引"""
+        if not self._rag_engine:
+            return
+        # 只记录有实质内容的用户输入
+        if len(content.strip()) < 5:
+            return
+        skip_words = ['嗯', '好', '继续', '可以', '行', 'ok', '是的', '对', '不对', '不是']
+        if content.strip() in skip_words:
+            return
+        self._rag_engine.ingest_and_persist(
+            title=f"用户记忆_{int(time.time())}",
+            content=(
+                f"# 用户输入记录\n\n"
+                f"> {content}\n\n"
+                f"记录时间: {time.strftime('%Y-%m-%d %H:%M')}"
+            ),
+            category="user_memory",
+            tags=["user_input"],
+            source="memory"
+        )
 
     # ── 短期记忆 ──
 
-    def add_message(self, role: str, content: str):
-        self.short_term.append({"role": role, "content": content, "time": time.time()})
+    def add_message(self, role: str, content: Union[str, list], tool_calls: list = None):
+        """添加消息到短期记忆。content 支持 str 或 list[dict]（多模态消息体）。"""
+        msg = {"role": role, "content": content, "time": time.time()}
+        if tool_calls:
+            msg["tool_calls"] = tool_calls
+        self.short_term.append(msg)
+        # ⚠️ 不再自动写入 RAG — 改为用户确认产出后显式调用 save_user_knowledge()
+        # 每次对话都自动入库会导致大量无意义记录被共享
+
+    def save_user_knowledge(self, content: str, tags: list = None):
+        """用户确认产出后可调用此方法将内容显式保存到 RAG 知识库。
+        
+        与 add_message 不同，此方法仅在用户明确说"可以了"时调用，
+        确保只有有价值的产出才进入知识库和共享库。
+        """
+        if not self._rag_engine:
+            return
+        if len(content.strip()) < 10:
+            return
+        tags = tags or ["user_output"]
+        self._rag_engine.ingest_and_persist(
+            title=f"用户产出_{int(time.time())}",
+            content=(
+                f"# 用户确认的产出内容\n\n"
+                f"> {content}\n\n"
+                f"记录时间: {time.strftime('%Y-%m-%d %H:%M')}"
+            ),
+            category="user_output",
+            tags=tags,
+            source="memory"
+        )
 
     def get_context(self, max_turns: int = 200) -> list:
-        return [{"role": m["role"], "content": m["content"]} for m in self.short_term[-max_turns:]]
+        result = []
+        for m in self.short_term[-max_turns:]:
+            msg = {"role": m["role"], "content": m["content"]}
+            if "tool_calls" in m:
+                msg["tool_calls"] = m["tool_calls"]
+            result.append(msg)
+        return result
 
     def clear_session(self):
         self._save_session_history()

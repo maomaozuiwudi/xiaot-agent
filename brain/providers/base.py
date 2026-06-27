@@ -23,9 +23,11 @@ class BaseLLMProvider(ABC):
              temperature: Optional[float] = None) -> dict:
         """
         对话接口
-        返回: {"role": "assistant", "content": "...", "tool_calls": [...]}
+        返回: {"role": "assistant", "content": "...", "tool_calls": [...],
+               "usage": {"prompt": int, "completion": int, "total": int}}
         tool_calls 格式: [{"id": "...", "type": "function",
                           "function": {"name": "...", "arguments": "..."}}]
+        usage 字段包含 token 用量（provider 支持时提供）
         """
         ...
 

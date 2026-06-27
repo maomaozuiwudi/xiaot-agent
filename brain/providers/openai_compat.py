@@ -221,4 +221,12 @@ class OpenAICompatProvider(BaseLLMProvider):
                 })
             result["tool_calls"] = tool_calls
 
+        # 提取 token 用量
+        if hasattr(response, "usage") and response.usage:
+            result["usage"] = {
+                "prompt": response.usage.prompt_tokens,
+                "completion": response.usage.completion_tokens,
+                "total": response.usage.total_tokens,
+            }
+
         return result

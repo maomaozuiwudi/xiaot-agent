@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0d1117" />
+  <meta name="color-scheme" content="dark" />
+  <title>小t Agent — 小红书内容工坊</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐱</text></svg>" />
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-title">
+      <span class="cat-icon">🐱</span>
+      <span>小t Agent</span>
+      <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400;">小红书内容工坊</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-icon" id="reset-btn" title="新建对话">✕</button>
+    </div>
+  </header>
+
+  <!-- Chat Container -->
+  <div class="chat-container" id="chat-container">
+    <div class="messages" id="messages">
+      <!-- Welcome -->
+      <div class="welcome-msg">
+        <span class="cat-big">🐱</span>
+        <h2>小t Agent</h2>
+        <p>
+          小红书内容工坊 AI 助手<br />
+          帮你做视频、写文案、分析素材
+        </p>
+        <div class="suggestions">
+          <div class="suggestion-chip" data-text="帮我做6个穿搭视频，35秒">👗 穿搭视频</div>
+          <div class="suggestion-chip" data-text="帮我分析一下这些素材">📊 分析素材</div>
+          <div class="suggestion-chip" data-text="换个风格，改成小清新">🌸 改风格</div>
+          <div class="suggestion-chip" data-text="搜索小红书最近的爆款笔记">🔍 搜爆款</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="input-area">
+    <form class="input-wrapper" id="chat-form">
+      <div class="input-box">
+        <textarea
+          id="chat-input"
+          placeholder="跟小t说说你想做什么…"
+          rows="1"
+        ></textarea>
+        <button type="submit" class="send-btn" id="send-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+      <div class="status-bar" id="status-bar"></div>
+    </form>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

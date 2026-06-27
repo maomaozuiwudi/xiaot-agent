@@ -59,6 +59,22 @@ tools:
       text: {type: string, description: 配音文本}
       voice: {type: string, description: 音色(默认zh-CN-XiaoxiaoNeural)}
     requires_confirm: false
+  search_xhs:
+    description: 搜索小红书笔记 — 通过Playwright API拦截获取笔记标题/内容/点赞/评论/收藏/多图
+    params:
+      keyword: {type: string, description: 搜索关键词}
+      max_results: {type: number, description: 最大笔记数(默认20)}
+    requires_confirm: false
+  search_xhs_suggest:
+    description: 获取小红书搜索联想词 — 按搜索热度排序
+    params:
+      keyword: {type: string, description: 搜索词}
+    requires_confirm: false
+  analyze_xhs_keywords:
+    description: 小红书关键词挖掘 — 种子词→联想词→笔记量统计，找出最热门的关键词
+    params:
+      seed_keywords: {type: list, description: 种子词列表}
+    requires_confirm: false
 
 references:
   - references/风格指南.md

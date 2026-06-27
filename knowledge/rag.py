@@ -32,11 +32,14 @@ class DocFragment:
 class RAGEngine:
     """RAG 引擎 — 四层递进检索"""
 
-    def __init__(self, sources_dir: str = None):
+    def __init__(self, sources_dir: str = None, shared_repo: str = "", shared_enabled: bool = False):
         if sources_dir is None:
             sources_dir = resolve_path(get("knowledge.rag.sources", [])[0]
                                        if get("knowledge.rag.sources") else "skills/xhs-content-factory/references/")
         self.sources_dir = Path(sources_dir)
+        self.shared_repo = shared_repo or get("knowledge.shared.repo", "")
+        self.shared_enabled = shared_enabled or get("knowledge.shared.enabled", False)
+        self.shared_dir = Path(resolve_path("data/shared/knowledge/")) if self.shared_repo else None
         self._index = []            # [(tags, content, path, title), ...]
         self._stopwords = {"的", "了", "是", "在", "有", "和", "就", "不", "人", "都",
                            "一", "个", "上", "也", "很", "到", "说", "要", "去", "你",
@@ -44,9 +47,12 @@ class RAGEngine:
                            "们", "那", "些", "能", "下", "过", "出", "来", "让", "对"}
         self._tfidf_vectorizer = None
         self._tfidf_matrix = None
+        self._sync_shared_repo()
         self._build_index()
 
     # ── 索引构建 ──
+
+
 
     def _build_index(self):
         """扫描参考文献目录，建立索引"""
@@ -55,6 +61,8 @@ class RAGEngine:
             return
 
         md_files = list(self.sources_dir.rglob("*.md")) + list(self.sources_dir.rglob("*.yaml"))
+        if self.shared_dir and self.shared_dir.exists():
+            md_files += list(self.shared_dir.rglob("*.md")) + list(self.shared_dir.rglob("*.yaml"))
         for fpath in md_files:
             try:
                 content = fpath.read_text("utf-8", errors="ignore")
@@ -79,9 +87,20 @@ class RAGEngine:
                                 tags = [t.strip().strip("[]'\"") for t in raw.split(",") if t.strip()]
                                 break
 
-                # 分类（按上级目录名）
-                rel_path = fpath.relative_to(self.sources_dir)
-                category = str(rel_path.parent) if rel_path.parent != Path(".") else "通用"
+                # 分类（按上级目录名或来源）
+                try:
+                    rel_path = fpath.relative_to(self.sources_dir)
+                    category = str(rel_path.parent) if rel_path.parent != Path(".") else "通用"
+                except ValueError:
+                    # 来自共享库的文件
+                    if self.shared_dir:
+                        try:
+                            rel_path = fpath.relative_to(self.shared_dir)
+                            category = f"共享/{str(rel_path.parent) if rel_path.parent != Path('.') else '通用'}"
+                        except ValueError:
+                            category = "共享/通用"
+                    else:
+                        category = "通用"
 
                 self._index.append({
                     "path": str(fpath),
@@ -100,6 +119,63 @@ class RAGEngine:
             self._build_tfidf()
 
         print(f"[RAG] 索引完成: {len(self._index)} 个文档")
+
+    # ── GitHub 共享知识库 ──
+
+    def _sync_shared_repo(self):
+        """从 GitHub 同步共享知识库到 data/shared/"""
+        if not self.shared_repo:
+            return
+        try:
+            self.shared_dir.mkdir(parents=True, exist_ok=True)
+            git_dir = self.shared_dir / ".git"
+            if git_dir.exists():
+                import subprocess
+                result = subprocess.run(
+                    ["git", "-C", str(self.shared_dir), "pull"],
+                    capture_output=True, text=True, timeout=30
+                )
+                print(f"[RAG] 共享知识库已更新: {result.stdout.strip()[:100]}")
+            else:
+                import subprocess
+                result = subprocess.run(
+                    ["gh", "repo", "clone", self.shared_repo, str(self.shared_dir)],
+                    capture_output=True, text=True, timeout=60
+                )
+                print(f"[RAG] 共享知识库已克隆: {result.stdout.strip()[:100]}")
+        except Exception as e:
+            print(f"[RAG] 共享知识库同步失败 (不影响本地使用): {e}")
+
+    def _contribute_to_shared(self, title: str, content: str, category: str, tags: list):
+        """直接写入本地共享库并推送 GitHub（无需审核）"""
+        if not self.shared_repo or not self.shared_dir:
+            return
+        try:
+            safe_name = re.sub(r'[\\/:*?"<>|#\s]', '_', title)[:40]
+            safe_cat = re.sub(r'[\\/:*?"<>|#\s]', '_', str(category or "general"))[:20]
+
+            # 写入文件到共享目录
+            cat_dir = self.shared_dir / safe_cat
+            cat_dir.mkdir(parents=True, exist_ok=True)
+            filepath = cat_dir / f"{safe_name}.md"
+            tag_str = ", ".join(tags) if tags else ""
+            filepath.write_text(
+                f"---\ntitle: {title}\ntags: [{tag_str}]\n---\n\n{content}",
+                encoding="utf-8"
+            )
+
+            # git add -> commit -> push（直推，不经过审核）
+            import subprocess
+            subprocess.run(["git", "-C", str(self.shared_dir), "add", "."],
+                           capture_output=True, timeout=10)
+            subprocess.run(["git", "-C", str(self.shared_dir), "commit",
+                           "-m", f"共享: {title[:60]}"],
+                           capture_output=True, timeout=10)
+            subprocess.run(["git", "-C", str(self.shared_dir), "push"],
+                           capture_output=True, timeout=30)
+            print(f"[RAG] 知识已共享并推送: {filepath.name}")
+        except Exception as e:
+            print(f"[RAG] 共享提交异常 (不影响本地使用): {e}")
 
     def _build_tfidf(self):
         """构建 TF-IDF 向量索引"""
@@ -278,6 +354,78 @@ class RAGEngine:
                         return para[:600]
                 return doc["content"][:500]
         return preview
+
+    # ── 动态注入（不写文件） ──
+
+    def ingest(self, title: str, content: str, category: str = "xhs_search",
+               tags: list = None, source: str = "xhs_search") -> bool:
+        """
+        将内容直接注入 RAG 内存索引（不写文件）。
+
+        Args:
+            title: 文档标题（搜索关键词）
+            content: Markdown 格式的完整内容
+            category: 分类（默认 xhs_search）
+            tags: 标签列表
+            source: 来源标识（默认 xhs_search）
+
+        Returns:
+            bool: 是否成功
+        """
+        if not content or not content.strip():
+            return False
+
+        try:
+            doc = {
+                "path": f"{source}://{title}",
+                "title": title,
+                "category": category,
+                "tags": tags or [],
+                "content": content,
+                "paragraphs": [p.strip() for p in re.split(r'\n\s*\n', content)
+                               if p.strip() and len(p.strip()) > 20],
+            }
+            self._index.append(doc)
+
+            # 更新 TF-IDF 矩阵
+            if self._tfidf_vectorizer is not None and doc["paragraphs"]:
+                try:
+                    from sklearn.feature_extraction.text import TfidfVectorizer
+                    new_paras = doc["paragraphs"]
+                    new_vec = self._tfidf_vectorizer.transform(new_paras)
+                    from scipy.sparse import vstack
+                    self._tfidf_matrix = vstack([self._tfidf_matrix, new_vec])
+                    # 更新 doc_map
+                    if not hasattr(self, '_doc_map'):
+                        self._doc_map = []
+                    for para in new_paras:
+                        self._doc_map.append((doc["path"], para[:100]))
+                except Exception:
+                    # TF-IDF 更新失败不影响主流程
+                    pass
+
+            return True
+        except Exception:
+            return False
+
+    def ingest_and_persist(self, title: str, content: str, category: str = "user_prefs",
+                           tags: list = None, source: str = "user") -> bool:
+        """注入内存 + 同时写入参考库文件（持久化）"""
+        ok = self.ingest(title, content, category, tags, source)
+        if not ok:
+            return False
+        try:
+            safe_name = re.sub(r'[\\/:*?"<>|#\s]', '_', title)[:40]
+            safe_src = re.sub(r'[\\/:*?"<>|#\s]', '_', source)[:10]
+            filepath = self.sources_dir / f"user_{safe_src}_{safe_name}.md"
+            filepath.parent.mkdir(parents=True, exist_ok=True)
+            filepath.write_text(content, encoding="utf-8")
+        except Exception:
+            pass
+        # 如果共享模式开启，自动提交到共享库
+        if self.shared_enabled and self.shared_repo:
+            self._contribute_to_shared(title, content, category, tags)
+        return True
 
     def refresh(self):
         """重新索引（当参考库文件变化时）"""

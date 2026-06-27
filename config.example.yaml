@@ -1,0 +1,54 @@
+# 小t Agent 配置模板
+# 复制此文件为 config.yaml 并填入你的 API Key
+
+llm:
+  provider: openai_compat
+  model: deepseek-chat
+  api_key: ""               # ← 填入你的 API Key
+  base_url: https://api.deepseek.com
+  context_window: 1000000
+  max_tokens: 8192
+  temperature: 0.3
+  vision:
+    provider: kimi
+    model: kimi-k2.5
+    api_key: ""             # ← 选填，看图用
+    base_url: https://api.moonshot.cn/v1
+
+rnote:
+  api_key: ""               # ← 选填，小红书搜索用
+
+knowledge:
+  context:
+    window: 1000000
+    max_session_turns: 200
+  rag:
+    type: local
+    index_mode: hybrid
+    auto_index: true
+  search:
+    backend: tavily         # 或 searxng
+    max_results: 5
+
+user:
+  data_dir: data/users/
+  privacy:
+    default: sync
+
+hallucination_guard:
+  enabled: true
+  temperature_limit: 0.3
+
+evolution:
+  aesthetic:
+    enabled: true
+    summarize_interval: 10
+  clip_rules:
+    enabled: true
+
+output:
+  work_dir: output/
+  clip_temp: output/clips/
+  frames: output/frames/
+  final: output/final/
+  logs: data/logs/

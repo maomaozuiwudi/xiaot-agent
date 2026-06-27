@@ -337,6 +337,18 @@ class SkillManager:
         # 转换为 OpenAI 兼容的 parameters schema
         parameters_schema = self._tool_params_to_schema(tool_name, params)
 
+        # 检查该工具是否已有真实 handler（来自 brain/tools.py 或其他源）
+        existing = self._registry._tools.get(tool_name)
+        if existing is not None and existing.get("handler") is not None:
+            logger.info(
+                "[Skill:%s] Tool:%s 已有真实 handler，跳过桩注册",
+                skill_name,
+                tool_name,
+            )
+            # 仍要记录工具归属，供后续引用
+            self._tool_to_skill[tool_name] = skill_name
+            return
+
         # 创建一个桩 handler，实际逻辑由技能的具体实现覆盖
         def _stub_handler(args: dict) -> tuple[str, dict]:
             logger.info("[Skill:%s] Tool:%s 被调用 args=%s", skill_name, tool_name, args)

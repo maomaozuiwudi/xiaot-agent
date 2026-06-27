@@ -1,0 +1,46 @@
+name: hyperframes-video
+version: 1.0.0
+description: 超帧视频生成 — HTML+CSS 动画转为 MP4 视频，支持逐帧渲染、图文混排、动效
+author: 工具猫
+triggers:
+  - 超帧
+  - hyperframe
+  - html转视频
+  - 动画视频
+  - 逐帧渲染
+  - 幻灯片视频
+  - 图文视频
+  - hf视频
+tools:
+  render_html_video:
+    description: 将 HTML+CSS 动画渲染为 MP4 视频，支持逐帧截图+ffmpeg合成
+    params:
+      html: {type: string, description: HTML 模板字符串（含 CSS 动画）}
+      duration: {type: number, description: 视频时长(秒)}
+      fps: {type: number, description: 帧率(默认24)}
+      output: {type: string, description: 输出 MP4 路径}
+    requires_confirm: true
+  make_slideshow:
+    description: 将多张图片生成为幻灯片视频，支持过渡动画和配音
+    params:
+      images: {type: list, description: 图片路径列表}
+      durations: {type: list, description: 每张图片显示时长(秒)}
+      transition: {type: string, description: 过渡效果(fade/slide/zoom)}
+      fps: {type: number, description: 帧率(默认24)}
+      output: {type: string, description: 输出 MP4 路径}
+    requires_confirm: true
+  add_subtitles:
+    description: 给视频添加字幕/文字叠加，支持 SRT 字幕文件
+    params:
+      video: {type: string, description: 原视频路径}
+      subtitle_file: {type: string, description: SRT 字幕文件路径}
+      style: {type: dict, description: 字幕风格参数}
+      output: {type: string, description: 输出视频路径}
+    requires_confirm: true
+references:
+  - references/html-video-template.md
+install:
+  pip:
+    - Pillow>=10.0
+    - jinja2>=3.0
+dependencies: []

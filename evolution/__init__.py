@@ -26,6 +26,29 @@ class AestheticEvolution:
         self.summarize_interval = get("evolution.aesthetic.summarize_interval", 10)
         self._history = self._load_history()
         self._session_count = len(self._history.get("sessions", []))
+        self._rag_engine = None  # RAG 引擎引用，注入后自动记录
+
+    def set_rag_engine(self, engine):
+        """注入 RAG 引擎，使偏好记录自动注入知识库"""
+        self._rag_engine = engine
+
+    def _record_to_rag(self, category, key, value, context=""):
+        """将用户偏好自动写入 RAG 索引"""
+        if not self._rag_engine:
+            return
+        content = (
+            f"# 用户偏好: {category}/{key}\n\n"
+            f"- 选择值: {value}\n"
+            f"- 上下文: {context}\n"
+            f"- 时间: {time.strftime('%Y-%m-%d %H:%M')}\n"
+        )
+        self._rag_engine.ingest_and_persist(
+            title=f"偏好_{category}_{key}",
+            content=content,
+            category="user_prefs",
+            tags=[category, key],
+            source="evolution"
+        )
 
     def _load_history(self) -> dict:
         """加载历史审美数据"""
@@ -46,7 +69,7 @@ class AestheticEvolution:
             yaml.dump(self._history, f, allow_unicode=True, default_flow_style=False)
 
     def record_choice(self, category: str, key: str, value, context: str = ""):
-        """记录用户的选择"""
+        """记录用户的选择，自动写入 RAG"""
         if category not in self._history["preferences"]:
             self._history["preferences"][category] = {}
         if key not in self._history["preferences"][category]:
@@ -61,13 +84,16 @@ class AestheticEvolution:
         self._session_count += 1
         self._save()
 
+        # 自动写入 RAG
+        self._record_to_rag(category, key, str(value), context)
+
         # 触发总结
         if self._session_count % self.summarize_interval == 0:
             return self.summarize(category)
         return None
 
     def record_feedback(self, category: str, old_value, new_value, reason: str = ""):
-        """记录用户修正（"太丑了" → 反馈信号）"""
+        """记录用户修正（"太丑了" → 反馈信号），自动写入 RAG"""
         entry = {
             "type": "correction",
             "old": old_value,
@@ -82,6 +108,9 @@ class AestheticEvolution:
             "entry": entry,
         })
         self._save()
+
+        # 自动写入 RAG
+        self._record_to_rag(category, "feedback", f"{old_value}→{new_value}", reason)
 
     def get_preferred(self, category: str, key: str, default=None):
         """获取最常选的值"""
@@ -146,6 +175,31 @@ class ClipRuleEvolution:
         ))
         self.auto_propose = get("evolution.clip_rules.auto_propose", True)
         self._history = self._load_history()
+        self._rag_engine = None  # RAG 引擎引用
+
+    def set_rag_engine(self, engine):
+        """注入 RAG 引擎，使剪辑偏好自动注入知识库"""
+        self._rag_engine = engine
+
+    def _record_to_rag(self, param, old_val, new_val, context=""):
+        """将剪辑参数调整自动写入 RAG 索引"""
+        if not self._rag_engine:
+            return
+        content = (
+            f"# 用户剪辑偏好\n\n"
+            f"- 参数: {param}\n"
+            f"- 旧值: {old_val}\n"
+            f"- 新值: {new_val}\n"
+            f"- 上下文: {context}\n"
+            f"- 时间: {time.strftime('%Y-%m-%d %H:%M')}\n"
+        )
+        self._rag_engine.ingest_and_persist(
+            title=f"剪辑_{param}_{int(time.time())}",
+            content=content,
+            category="user_clip_prefs",
+            tags=["clip", param],
+            source="evolution_clip"
+        )
 
     def _load_history(self) -> dict:
         if self.feedback_file.exists():
@@ -164,7 +218,7 @@ class ClipRuleEvolution:
             yaml.dump(self._history, f, allow_unicode=True, default_flow_style=False)
 
     def record_adjustment(self, param: str, old_val, new_val, context: str = ""):
-        """记录用户参数调整"""
+        """记录用户参数调整，自动写入 RAG"""
         self._history["parameter_adjustments"].append({
             "param": param,
             "from": old_val,
@@ -173,10 +227,14 @@ class ClipRuleEvolution:
             "timestamp": time.time(),
         })
         self._save()
+
+        # 自动写入 RAG
+        self._record_to_rag(param, old_val, new_val, context)
+
         return self._detect_pattern(param)
 
     def record_new_pattern(self, description: str, evidence: list):
-        """记录新发现的剪辑模式"""
+        """记录新发现的剪辑模式，自动写入 RAG"""
         self._history["new_patterns"].append({
             "description": description,
             "evidence": evidence,
@@ -185,14 +243,48 @@ class ClipRuleEvolution:
         })
         self._save()
 
+        # 自动写入 RAG
+        if self._rag_engine:
+            evidence_str = "\n".join(f"  - {e}" for e in evidence[:5])
+            content = (
+                f"# 用户发现的新剪辑模式\n\n"
+                f"描述: {description}\n\n"
+                f"证据:\n{evidence_str}\n"
+                f"时间: {time.strftime('%Y-%m-%d %H:%M')}\n"
+            )
+            self._rag_engine.ingest_and_persist(
+                title=f"剪辑模式_{int(time.time())}",
+                content=content,
+                category="user_clip_patterns",
+                tags=["clip_pattern"],
+                source="evolution_clip"
+            )
+
     def record_custom_rule(self, rule_name: str, rule_def: dict):
-        """记录用户自定义规则"""
+        """记录用户自定义规则，自动写入 RAG"""
         self._history["rules"].append({
             "name": rule_name,
             "definition": rule_def,
             "timestamp": time.time(),
         })
         self._save()
+
+        # 自动写入 RAG
+        if self._rag_engine:
+            import json
+            content = (
+                f"# 用户自定义剪辑规则\n\n"
+                f"规则名: {rule_name}\n\n"
+                f"定义:\n```json\n{json.dumps(rule_def, ensure_ascii=False, indent=2)}\n```\n"
+                f"时间: {time.strftime('%Y-%m-%d %H:%M')}\n"
+            )
+            self._rag_engine.ingest_and_persist(
+                title=f"剪辑规则_{rule_name}",
+                content=content,
+                category="user_clip_rules",
+                tags=["clip_rule", rule_name],
+                source="evolution_clip"
+            )
 
     def _detect_pattern(self, param: str) -> Optional[dict]:
         """检测参数调整是否有规律"""

@@ -5,110 +5,326 @@ ToolRegistry: 管理所有可被 AI 调用的工具
 提供 OpenAI-compatible Function Calling 定义
 """
 
+import base64
 import json
 import logging
+import os
+import time
+from pathlib import Path
 from typing import Any, Callable, Optional
+
+from config_loader import get
 
 logger = logging.getLogger(__name__)
 
 
 # ======================================================================
-# 内置工具桩（stub handlers）
-# 真实实现在 skill 模块中注入覆盖
+# 内置工具 handlers
 # ======================================================================
 
-def _stub_clip_videos(args: dict) -> tuple[str, dict]:
-    """剪辑视频 — 桩"""
+def _clip_videos(args: dict) -> tuple[str, dict]:
+    """裁剪/拼接多个视频片段，用 MediaPipe 骨架检测自动选取最佳片段"""
     paths = args.get("paths", [])
     duration = args.get("duration", 15.0)
-    logger.info("[Tool:clip_videos] paths=%s, duration=%s", paths, duration)
-    return (
-        f"[STUB] 已接收剪辑请求：{len(paths)} 个视频，每段 {duration}s",
-        {"status": "ok", "tool": "clip_videos", "paths": paths, "duration": duration},
-    )
+
+    if not paths:
+        return ("未提供视频路径", {"status": "error", "error": "未提供视频路径"})
+
+    from brain.engines.clip_engine import ClipVideo
+
+    output_dir = "output/temp_clips/"
+    os.makedirs(output_dir, exist_ok=True)
+
+    results = []
+    clip = ClipVideo()
+
+    for i, vpath in enumerate(paths):
+        out_path = os.path.join(output_dir, f"clip_{i}.mp4")
+        try:
+            actual_path, bbox = clip.clip_video(vpath, out_path, target_duration=duration)
+            results.append({"index": i, "path": actual_path, "bbox_size": bbox})
+        except Exception as e:
+            results.append({"index": i, "path": vpath, "error": str(e)})
+
+    summary = f"已剪辑 {len([r for r in results if 'error' not in r])}/{len(paths)} 个视频"
+    clip_paths = [r["path"] for r in results if "error" not in r]
+    path_list = "\n".join(f"  clip_{i}: {p}" for i, p in enumerate(clip_paths))
+    result_text = f"{summary}\n剪辑后的片段路径:\n{path_list}"
+    return (result_text, {"status": "ok", "clips": results, "clip_paths": clip_paths})
 
 
-def _stub_vision_analyze(args: dict) -> tuple[str, dict]:
-    """Kimi 视觉分析 — 桩"""
+def _vision_analyze(args: dict) -> tuple[str, dict]:
+    """调用 Kimi K2.5 视觉模型分析图片内容（人物、服装、颜色、场景、动作等）"""
     paths = args.get("paths", [])
     logger.info("[Tool:vision_analyze] paths=%s", paths)
+
+    if not paths:
+        return (
+            "未提供图片路径",
+            {"status": "error", "tool": "vision_analyze", "error": "未提供图片路径"},
+        )
+
+    # 读取配置：优先用视觉模型配置，未配置时降级用主模型
+    vision_key = get("llm.vision.api_key", "")
+    vision_base_url = get("llm.vision.base_url", "")
+    vision_model = get("llm.vision.model", "")
+
+    # 没独立配看图 Key → 降级用主模型
+    if not vision_key:
+        vision_key = get("llm.api_key", "")
+        vision_base_url = get("llm.base_url", "https://api.deepseek.com")
+        vision_model = get("llm.model", "deepseek-chat")
+    else:
+        # 有视觉配置就用视觉的，缺省 fallback
+        vision_base_url = vision_base_url or "https://api.moonshot.cn/v1"
+        vision_model = vision_model or "kimi-k2.5"
+
+    # 主模型 Key 也没有，才报错
+    if not vision_key:
+        return (
+            "看图功能未配置，请在登录时配置视觉模型 API Key",
+            {"status": "error", "tool": "vision_analyze", "error": "视觉模型 API Key 未配置"},
+        )
+
+    # 构建多模态消息内容
+    content_parts = [
+        {"type": "text", "text": "请详细描述这些图片的内容，包括人物、服装、颜色、场景、动作等细节"}
+    ]
+
+    for path_str in paths:
+        try:
+            # 转换 MSYS 路径 /e/xxx → E:/xxx
+            _msys_m = __import__('re').match(r'^/([a-zA-Z])/', path_str)
+            if _msys_m:
+                path_str = f"{_msys_m.group(1).upper()}:/{path_str[3:]}"
+            p = Path(path_str).resolve()
+            if not p.exists():
+                logger.warning("图片文件不存在: %s", p)
+                content_parts.append({"type": "text", "text": f"[文件不存在: {path_str}]"})
+                continue
+
+            suffix = p.suffix.lower()
+            if suffix in (".jpg", ".jpeg"):
+                mime = "image/jpeg"
+                # base64 编码图片
+                with open(p, "rb") as f:
+                    b64_data = base64.b64encode(f.read()).decode("utf-8")
+                data_url = f"data:{mime};base64,{b64_data}"
+                content_parts.append({"type": "image_url", "image_url": {"url": data_url}})
+
+            elif suffix == ".png":
+                mime = "image/png"
+                with open(p, "rb") as f:
+                    b64_data = base64.b64encode(f.read()).decode("utf-8")
+                data_url = f"data:{mime};base64,{b64_data}"
+                content_parts.append({"type": "image_url", "image_url": {"url": data_url}})
+
+            elif suffix == ".webp":
+                mime = "image/webp"
+                with open(p, "rb") as f:
+                    b64_data = base64.b64encode(f.read()).decode("utf-8")
+                data_url = f"data:{mime};base64,{b64_data}"
+                content_parts.append({"type": "image_url", "image_url": {"url": data_url}})
+
+            elif suffix == ".mp4":
+                # 视频文件：ffmpeg 抽一帧，转为 jpg 发给 Kimi 分析
+                import subprocess, tempfile
+                with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
+                    frame_path = tmp.name
+                ret = subprocess.run(
+                    ["ffmpeg", "-y", "-i", str(p), "-ss", "00:00:01",
+                     "-vframes", "1", "-q:v", "2", frame_path],
+                    capture_output=True, timeout=30,
+                )
+                if ret.returncode == 0 and Path(frame_path).exists():
+                    with open(frame_path, "rb") as f:
+                        b64_data = base64.b64encode(f.read()).decode("utf-8")
+                    data_url = f"data:image/jpeg;base64,{b64_data}"
+                    content_parts.append({"type": "image_url", "image_url": {"url": data_url}})
+                    Path(frame_path).unlink(missing_ok=True)
+                else:
+                    content_parts.append({"type": "text", "text": f"[视频抽帧失败: {path_str}]"})
+
+            else:
+                logger.warning("不支持的格式: %s", suffix)
+                content_parts.append({"type": "text", "text": f"[不支持的格式: {path_str}]"})
+
+        except Exception as e:
+            logger.exception("读取图片失败: %s", path_str)
+            content_parts.append({"type": "text", "text": f"[读取图片失败: {path_str} - {e}]"})
+
+    # 如果没有成功加载任何图片，返回错误
+    image_count = sum(1 for c in content_parts if c["type"] == "image_url")
+    if image_count == 0:
+        return (
+            "没有可分析的图片",
+            {"status": "error", "tool": "vision_analyze", "error": "没有可分析的图片"},
+        )
+
+    # 调用 Kimi API
+    try:
+        import openai
+
+        client = openai.OpenAI(api_key=vision_key, base_url=vision_base_url, timeout=90)
+        response = client.chat.completions.create(
+            model=vision_model,
+            messages=[{"role": "user", "content": content_parts}],
+            max_tokens=2048,
+        )
+        description = response.choices[0].message.content or ""
+    except Exception as e:
+        logger.exception("Kimi API 调用失败")
+        return (
+            f"图片分析失败：{e}",
+            {"status": "error", "tool": "vision_analyze", "error": str(e)},
+        )
+
     return (
-        f"[STUB] 已接收视觉分析请求：{len(paths)} 张图片",
-        {"status": "ok", "tool": "vision_analyze", "paths": paths},
+        description,
+        {
+            "status": "ok",
+            "tool": "vision_analyze",
+            "paths": paths,
+            "image_count": image_count,
+            "description": description,
+        },
     )
 
 
-def _stub_generate_copy(args: dict) -> tuple[str, dict]:
-    """生成文案 — 桩"""
+def _generate_copy(args: dict) -> tuple[str, dict]:
+    """根据主题和分镜信息生成小红书种草文案"""
     topic = args.get("topic", "")
     context = args.get("context", "")
     visual_context = args.get("visual_context", "")
+    storyboard = args.get("storyboard", "")
     logger.info("[Tool:generate_copy] topic=%s", topic)
-    return (
-        f"[STUB] 已为「{topic}」生成文案（长度：{len(context) + len(visual_context)} 字符上下文）",
-        {
-            "status": "ok",
-            "tool": "generate_copy",
-            "topic": topic,
-            "copy_preview": f"这是关于「{topic}」的小红书种草文案……",
-        },
+
+    if not topic:
+        return ("请提供文案主题", {"status": "error", "error": "缺少主题"})
+
+    from brain.engines.copy_engine import generate_xhs_copy
+
+    result = generate_xhs_copy(topic, context, visual_context, storyboard)
+
+    preview = (
+        f"【{result.get('title','')}】\n\n"
+        f"{result.get('body','')[:200]}...\n\n"
+        f"{' '.join(result.get('tags',[]))}"
     )
+    return (preview, {"status": "ok", "copy": result})
 
 
-def _stub_compose_video(args: dict) -> tuple[str, dict]:
-    """最终视频合成 — 桩"""
+def _compose_video(args: dict) -> tuple[str, dict]:
+    """将多个已剪辑的视频片段合成为最终视频"""
     clips = args.get("clips", [])
     settings = args.get("settings", {})
     logger.info("[Tool:compose_video] clips=%s, settings=%s", len(clips), settings)
+
+    if not clips:
+        return ("未提供视频片段", {"status": "error", "error": "缺少clips"})
+
+    from brain.engines.composer import compose_mixed
+
+    shots = [{"type": "video", "path": c, "duration": 8.0} for c in clips]
+
+    resolution = (1080, 1920)  # 默认竖屏
+    if settings.get("resolution") in ("1920x1080", "1080p", "landscape"):
+        resolution = (1920, 1080)
+
+    output_path = f"output/composed_{int(time.time())}.mp4"
+    os.makedirs("output", exist_ok=True)
+
+    bgm = settings.get("bgm", "")
+
+    result_path = compose_mixed(shots, output_path, bgm_path=bgm if bgm else None, resolution=resolution)
+
     return (
-        f"[STUB] 已合成视频：{len(clips)} 个片段，分辨率 {settings.get('resolution', '1080p')}",
-        {"status": "ok", "tool": "compose_video", "clip_count": len(clips), "settings": settings},
+        f"✅ 合成完成: {result_path}",
+        {"status": "ok", "output_path": result_path, "clip_count": len(clips), "resolution": resolution},
     )
 
 
-def _stub_generate_card(args: dict) -> tuple[str, dict]:
-    """生成推广卡片 — 桩"""
+def _generate_card(args: dict) -> tuple[str, dict]:
+    """生成推广卡片/封面图 — 使用 Playwright 渲染 HTML 截图"""
     text = args.get("text", "")
     style = args.get("style", {})
-    logger.info("[Tool:generate_card] text_length=%s, style=%s", len(text), style)
+
+    if not text:
+        return ("请提供卡片文案", {"status": "error", "error": "缺少text"})
+
+    from brain.engines.card_engine import CardGenerator
+
+    gen = CardGenerator()
+    output_path = gen.generate_cover(
+        title=text,
+        subtitle=style.get("subtitle", ""),
+        tags=style.get("tags", []),
+    )
+
+    logger.info("[Tool:generate_card] text=%s, output=%s", text[:30], output_path)
     return (
-        f"[STUB] 已生成卡片海报：文案 {len(text)} 字，风格 {style.get('theme', 'default')}",
-        {"status": "ok", "tool": "generate_card", "text_length": len(text), "style": style},
+        f"卡片已生成: {output_path}",
+        {"status": "ok", "output_path": output_path, "text": text, "style": style},
     )
 
 
-def _stub_search_web(args: dict) -> tuple[str, dict]:
-    """网络搜索 — 桩"""
+def _search_web(args: dict) -> tuple[str, dict]:
+    """通过 SearXNG 搜索引擎检索网络信息"""
     query = args.get("query", "")
-    logger.info("[Tool:search_web] query=%s", query)
-    return (
-        f"[STUB] 搜索「{query}」的结果（模拟数据）",
-        {
-            "status": "ok",
-            "tool": "search_web",
-            "query": query,
-            "results": [{"title": f"关于「{query}」的搜索结果 1", "url": "https://example.com/1"}],
-        },
-    )
+    if not query:
+        return ("请提供搜索关键词", {"status": "error", "error": "缺少query"})
+
+    from brain.engines.searxng_search import search
+
+    result = search(query, max_results=5)
+
+    if result.get("error"):
+        return (f"搜索失败: {result['error']}", {"status": "error", "error": result["error"]})
+
+    lines = [f"🔍 搜索结果: {query}"]
+    for r in result["results"]:
+        lines.append(f"\n📌 {r['title']}")
+        lines.append(f"   {r['url']}")
+        if r.get("content"):
+            lines.append(f"   {r['content'][:150]}")
+    if not result["results"]:
+        lines.append("\n（无结果）")
+
+    return ("\n".join(lines), {"status": "ok", **result})
 
 
-def _stub_synthesize_tts(args: dict) -> tuple[str, dict]:
-    """文本转语音 — 桩"""
+def _synthesize_tts(args: dict) -> tuple[str, dict]:
+    """文本转语音 — 火山引擎声音复刻"""
     text = args.get("text", "")
     voice = args.get("voice", "default")
-    logger.info("[Tool:synthesize_tts] text_length=%s, voice=%s", len(text), voice)
-    return (
-        f"[STUB] 已将 {len(text)} 字文本转为语音（音色：{voice}）",
-        {"status": "ok", "tool": "synthesize_tts", "text_length": len(text), "voice": voice},
-    )
+
+    if not text:
+        return ("请提供要转语音的文本", {"status": "error", "error": "缺少text"})
+
+    from brain.engines.tts_engine import synthesize
+
+    # 默认用火山引擎声音复刻 Voice ID S_wHXLNCs52，其他 voice 值暂忽略
+    voice_id = "S_wHXLNCs52"
+
+    try:
+        output_path = synthesize(text, voice_id=voice_id)
+        return (
+            f"音频已生成: {output_path}（{len(text)}字）",
+            {"status": "ok", "output_path": output_path, "text_length": len(text), "voice": voice},
+        )
+    except Exception as e:
+        return (
+            f"TTS 生成失败: {e}",
+            {"status": "error", "error": str(e)},
+        )
 
 
 # 内置工具注册元数据
 _BUILTIN_TOOLS: list[dict] = [
     {
         "name": "clip_videos",
-        "description": "剪辑/拼接多个视频片段，可设置每段时长。支持裁剪、合并、调速等基础操作",
-        "handler": _stub_clip_videos,
+        "description": "用骨架检测智能剪辑视频，返回剪辑后片段路径（clip_paths）供合成使用。可设置每段目标时长。",
+        "handler": _clip_videos,
         "requires_confirm": False,
         "parameters": {
             "type": "object",
@@ -130,7 +346,7 @@ _BUILTIN_TOOLS: list[dict] = [
     {
         "name": "vision_analyze",
         "description": "调用 Kimi 视觉模型分析图片内容，可用于分析素材图片、截图等",
-        "handler": _stub_vision_analyze,
+        "handler": _vision_analyze,
         "requires_confirm": False,
         "parameters": {
             "type": "object",
@@ -146,8 +362,8 @@ _BUILTIN_TOOLS: list[dict] = [
     },
     {
         "name": "generate_copy",
-        "description": "根据主题与上下文生成小红书种草文案、标题、标签等文本内容",
-        "handler": _stub_generate_copy,
+        "description": "根据主题、视觉素材描述和分镜时长生成小红书种草文案（含配音脚本），会根据每镜时长自动匹配文案长度",
+        "handler": _generate_copy,
         "requires_confirm": False,
         "parameters": {
             "type": "object",
@@ -164,6 +380,10 @@ _BUILTIN_TOOLS: list[dict] = [
                     "type": "string",
                     "description": "视觉素材描述，用于文案与画面的配合",
                 },
+                "storyboard": {
+                    "type": "string",
+                    "description": "分镜表：每镜的画面描述+目标时长（秒），格式如「镜1|白色连衣裙|8s\\n镜2|防晒衬衫|5s」，用于控制配音文案总时长",
+                },
             },
             "required": ["topic"],
         },
@@ -171,7 +391,7 @@ _BUILTIN_TOOLS: list[dict] = [
     {
         "name": "compose_video",
         "description": "将多个已剪辑的视频片段合成为最终视频，可配置分辨率、背景音乐、转场等",
-        "handler": _stub_compose_video,
+        "handler": _compose_video,
         "requires_confirm": True,
         "parameters": {
             "type": "object",
@@ -187,7 +407,7 @@ _BUILTIN_TOOLS: list[dict] = [
                     "properties": {
                         "resolution": {
                             "type": "string",
-                            "description": "输出分辨率，如 1080p, 4k",
+                            "description": "输出分辨率，默认竖屏 1080×1920。传 'landscape' 或 '1920x1080' 为横屏",
                         },
                         "bgm": {
                             "type": "string",
@@ -210,7 +430,7 @@ _BUILTIN_TOOLS: list[dict] = [
     {
         "name": "generate_card",
         "description": "生成推广卡片/封面图，支持自定义文案和视觉风格",
-        "handler": _stub_generate_card,
+        "handler": _generate_card,
         "requires_confirm": True,
         "parameters": {
             "type": "object",
@@ -226,6 +446,15 @@ _BUILTIN_TOOLS: list[dict] = [
                         "theme": {
                             "type": "string",
                             "description": "主题色/风格，如 '清新', '复古', '科技'",
+                        },
+                        "subtitle": {
+                            "type": "string",
+                            "description": "副标题/补充文案",
+                        },
+                        "tags": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "标签列表，最多5个",
                         },
                         "font_size": {
                             "type": "integer",
@@ -244,7 +473,7 @@ _BUILTIN_TOOLS: list[dict] = [
     {
         "name": "search_web",
         "description": "通过 SearXNG 搜索引擎检索网络信息，获取实时资讯、素材灵感或热点话题",
-        "handler": _stub_search_web,
+        "handler": _search_web,
         "requires_confirm": False,
         "parameters": {
             "type": "object",
@@ -260,7 +489,7 @@ _BUILTIN_TOOLS: list[dict] = [
     {
         "name": "synthesize_tts",
         "description": "文本转语音（TTS），将文案转换为语音旁白，用于视频配音",
-        "handler": _stub_synthesize_tts,
+        "handler": _synthesize_tts,
         "requires_confirm": False,
         "parameters": {
             "type": "object",
@@ -554,7 +783,7 @@ def parse_tool_calls(response: dict) -> list[dict]:
     return parsed
 
 
-def format_tool_result(tool_name: str, result: dict) -> dict:
+def format_tool_result(tool_name: str, result: dict, tool_call_id: str = "") -> dict:
     """
     将工具执行结果格式化为 LLM 可消费的 ``tool`` role message。
 
@@ -574,7 +803,7 @@ def format_tool_result(tool_name: str, result: dict) -> dict:
     """
     return {
         "role": "tool",
-        "tool_call_id": tool_name,
+        "tool_call_id": tool_call_id or tool_name,
         "content": json.dumps(result, ensure_ascii=False),
     }
 
@@ -607,3 +836,83 @@ def execute_tool_calls(
             "content": json.dumps(exec_result, ensure_ascii=False),
         })
     return results
+
+
+# ═══════════════════════════════════════════════
+# 小红书搜索工具注册（懒加载）
+# ═══════════════════════════════════════════════
+
+_xhs_search_loaded = False
+
+
+def _ensure_xhs_tools():
+    """惰性加载并注册小红书搜索工具（Rnote + 公开搜索，已移除 Playwright）"""
+    global _xhs_search_loaded
+    if _xhs_search_loaded:
+        return
+    _xhs_search_loaded = True
+
+    try:
+        import importlib
+        mod = importlib.import_module(
+            "skills.xhs-content-factory.tools.xhs_search"
+        )
+        search_xhs_notes = mod.search_xhs_notes
+        analyze_xhs_keywords = mod.analyze_xhs_keywords
+    except (ImportError, AttributeError) as e:
+        logger.debug("xhs_search 模块不可用: %s", e)
+
+    reg = get_registry()
+
+    def _search(args):
+        kw = args.get("keyword", "")
+        mr = int(args.get("max_results", 20))
+        result = search_xhs_notes(kw, mr)
+        notes = result.get("notes", [])
+        summary = result.get("summary", "")
+        lines = [f"📱 小红书「{kw}」搜索结果"]
+        if summary:
+            lines.append(f"   {summary}")
+        for n in notes[:10]:
+            lines.append(f"\n📌 {n.get('title','无标题')}")
+            lines.append(f"   作者: {n.get('author','?')}  ❤{n.get('likes',0)}  "
+                         f"💬{n.get('comments',0)}  ⭐{n.get('collects',0)}")
+            desc = n.get("description", "")[:80]
+            if desc:
+                lines.append(f"   {desc}")
+        if not notes:
+            lines.append("\n（无小红书笔记结果，请参考公开搜索结果）")
+        return (
+            "\n".join(lines),
+            {"status": "ok", "notes": notes, "count": result["count"], "summary": summary},
+        )
+
+    def _analyze(args):
+        seeds = args.get("seed_keywords", [])
+        result = analyze_xhs_keywords(seeds)
+        if not result["success"]:
+            return (f"分析失败: {result.get('error', '未知错误')}", {"status": "error"})
+        lines = ["📊 关键词分析"]
+        if result.get("suggestions"):
+            lines.append(f"\n🔥 推荐: {' → '.join(result['suggestions'])}")
+        for kw in result.get("keywords", [])[:15]:
+            likes = kw.get("likes", 0)
+            if likes > 0:
+                lines.append(f"  [❤{likes}] {kw['keyword']}")
+        lines.append(f"\n共 {result['count']} 个关键词")
+        return (
+            "\n".join(lines),
+            {"status": "ok", "keywords": result.get("keywords", []), "count": result["count"],
+             "suggestions": result.get("suggestions", [])},
+        )
+
+    reg.register("search_xhs", "搜索小红书内容 — Rnote API + 公开搜索（SearXNG），有 Rnote Key 则调两次，无 Key 则仅公开搜索", _search,
+                 {"type": "object", "properties": {
+                     "keyword": {"type": "string"},
+                     "max_results": {"type": "integer", "default": 20},
+                 }, "required": ["keyword"]})
+    reg.register("analyze_xhs_keywords", "小红书关键词挖掘（基于 Rnote 搜索）", _analyze,
+                 {"type": "object", "properties": {
+                     "seed_keywords": {"type": "array", "items": {"type": "string"}},
+                 }, "required": ["seed_keywords"]})
+    logger.info("XHS 搜索工具已注册（Rnote + 公开搜索）")

@@ -3,11 +3,12 @@ AI 大脑 v2 — 多用户上下文 + 共享记忆
 """
 import time
 import json
-from typing import Optional, Generator
+from typing import Optional, Generator, Union
 
 from config_loader import get
 from knowledge.rag import RAGEngine
 from knowledge.memory import UserManager, MemoryManager
+from evolution import AestheticEvolution, ClipRuleEvolution
 from brain.providers import get_provider
 from brain.tools import get_registry, parse_tool_calls, format_tool_result
 from guard.critic import Critic, CritiqueResult
@@ -21,7 +22,19 @@ class AgentBrain:
         # 用户上下文
         self.user_mgr = user_mgr or UserManager()
         self.memory = MemoryManager(self.user_mgr)
-        self.rag = RAGEngine()
+        self.rag = RAGEngine(
+            shared_repo=get("knowledge.shared.repo", ""),
+            shared_enabled=get("knowledge.shared.enabled", False),
+        )
+
+        # 进化引擎（越用越懂）
+        self.evolution = AestheticEvolution()
+        self.clip_evolution = ClipRuleEvolution()
+
+        # 把 RAG 注入进化引擎和记忆引擎
+        self.evolution.set_rag_engine(self.rag)
+        self.clip_evolution.set_rag_engine(self.rag)
+        self.memory.set_rag_engine(self.rag)
 
         # 共享 RAG（如果开启共享模式）
         if self.user_mgr.is_shared_mode():
@@ -34,6 +47,19 @@ class AgentBrain:
         self.tool_registry = get_registry()
         self.critic = Critic()
         self.hallucination_guard = HallucinationGuard()
+
+        # 懒加载小红书搜索工具
+        try:
+            from brain.tools import _ensure_xhs_tools
+            _ensure_xhs_tools()
+            # 传递 RAG 引擎给 XHS 搜索工具，使搜索结果自动注入知识库
+            import importlib
+            xhs_mod = importlib.import_module(
+                "skills.xhs-content-factory.tools.xhs_search"
+            )
+            xhs_mod.set_rag_engine(self.rag)
+        except ImportError:
+            pass
 
         # 用用户的 Key 初始化 Provider
         api_key = self.user_mgr.api_key
@@ -52,6 +78,11 @@ class AgentBrain:
         self.running = True
         self.current_skill = None
 
+        # Token 用量追踪
+        self.total_prompt_tokens = 0
+        self.total_completion_tokens = 0
+        self.context_window = get("llm.context_window", 1000000)
+
     def _build_system_prompt(self) -> str:
         mode_desc = "你正在共享模式下运行。用户的使用习惯会匿名汇入知识库，也会从社区积累的知识中受益。" \
             if self.user_mgr.is_shared_mode() else \
@@ -64,17 +95,33 @@ class AgentBrain:
 ## 核心原则
 1. **诚实优先**：不知道就说不知道，没有的数据不要编造
 2. **主动批评**：用户要求不合理时，先指出问题再问是否继续
-3. **确认制**：每个关键步骤（文案、合成）必须先问用户
-4. **知识优先级**：上下文 > 参考库(RAG) > 网络检索
+3. **剪辑直接执行**：收到视频素材主动剪辑，不用问用户
+4. **知识优先级**（按权重从高到低）：
+   - 🥇 **当前对话上下文（1M 窗口）** — 用户刚说/刚给的素材，最优先
+   - 🥈 **用户本地偏好/习惯** — 越用越懂，你的核心了解
+   - 🥉 **爆款数据库 / RAG 参考库** — 标记为 xhs_search/viral 的内容及喂入的规则/风格
+   - 🎯 **网络搜索** — 实时信息，仅作微调补充
 
-## 工作流
-收到"做视频""出片"需求时：
-1. 素材检查 → 2. 可行性评估 → 3. 骨架剪辑 → 4. 视觉分析 → 5. 文案生成(需确认) → 6. 配音/BGM → 7. 视频合成(需确认) → 8. 输出
+## 执行原则
+收到视频素材/做视频需求时，根据情况自主决定调用哪些工具：
+- 需要参考 → 调 search_web / search_xhs 搜爆款参考
+- 有视频素材 → 调 clip_videos 骨架智能剪辑
+- 需要分析画面 → 调 vision_analyze 分析内容
+- 需要文案 → 调 generate_copy 生成文案，展示给用户确认
+- 合视频 → 调 compose_video（默认竖屏 1080×1920），展示给用户确认
+- 配音 → 调 synthesize_tts
+
+不用按固定顺序，根据当前情况判断下一步做什么。一次最多调1个工具，等结果回来再决定。
 
 ## 工具使用规则
+- 可用工具：vision_analyze（分析图片/视频画面内容）、clip_videos（视频剪辑）、compose_video（视频合成）、generate_copy（生成文案）、synthesize_tts（语音合成）、xhs_search（小红书搜索）、search_web（网络搜索）
+- vision_analyze 可分析图片和视频的画面细节（人物、服装、颜色、场景、动作等）。当用户拖入/下发素材文件时，你必须第一时间主动调用 vision_analyze 工具来分析画面内容，**不要反问用户"内容是什么"**。调用时传入文件完整路径作为 paths 参数。
+- clip_videos 可以直接执行，不需要询问用户。收到视频路径后立即调用，传入 paths（视频路径列表）和 duration（每段目标时长秒数）。clip_videos 返回结果中的 clip_paths 就是剪辑后的视频路径，直接用于后续合成。
+- compose_video 的 clips 参数传入 clip_videos 返回的 clip_paths 列表，不要自己构造路径。
+- generate_copy 的 storyboard 参数：传入每镜的画面描述+目标时长（秒），DeepSeek 会根据总时长控制配音文案字数（正常语速约 3-4 字/秒），确保文案长度刚好匹配视频时长。
 - 一次最多调用 1 个工具，等结果回来再决定下一步
 - 工具结果是事实，不要重新解释
-- 需要确认的步骤停下来等用户
+- 文案和合成需要停下来等用户确认，剪辑和视觉分析不需要
 
 ## 输出
 - 用中文，每个步骤用 emoji 开头
@@ -83,20 +130,28 @@ class AgentBrain:
 
     # ── 核心对话 ──
 
-    def chat(self, user_input: str) -> Generator[dict, None, None]:
+    def chat(self, user_input: Union[str, list[dict]]) -> Generator[dict, None, None]:
         if not self.running:
             yield {"type": "error", "content": "AI 已停止"}
             return
 
+        # 提取文本部分（多模态消息中仅文本用于检索/审查，完整消息体原样传给 LLM）
+        if isinstance(user_input, list):
+            user_text = "".join(
+                part.get("text", "") for part in user_input if part.get("type") == "text"
+            )
+        else:
+            user_text = user_input
+
         self.memory.add_message("user", user_input)
         yield {"type": "step", "content": "🔍 分析需求中..."}
 
-        critique = self._pre_check(user_input)
+        critique = self._pre_check(user_text)
         if not critique.passes:
             yield {"type": "step", "content": self._format_critique(critique)}
 
         yield {"type": "step", "content": "📚 检索知识库..."}
-        context = self._augment_context(user_input)
+        context = self._augment_context(user_text)
         messages = self._build_messages(context)
 
         max_rounds = 5
@@ -106,6 +161,12 @@ class AgentBrain:
             except Exception as e:
                 yield {"type": "error", "content": f"调用失败: {e}"}
                 return
+
+            # 累加 token 用量
+            usage = response.get("usage")
+            if usage:
+                self.total_prompt_tokens += usage.get("prompt", 0)
+                self.total_completion_tokens += usage.get("completion", 0)
 
             assistant_msg = {
                 "role": "assistant",
@@ -125,7 +186,7 @@ class AgentBrain:
                         return
 
                     result = self.tool_registry.execute(tc["name"], tc["arguments"])
-                    result_msg = format_tool_result(tc["name"], result)
+                    result_msg = format_tool_result(tc["name"], result, tool_call_id=tc["id"])
                     messages.append(result_msg)
                     self.memory.record_feedback("tool_usage", {
                         "tool": tc["name"], "args": tc["arguments"],
@@ -143,13 +204,21 @@ class AgentBrain:
 
         yield {"type": "done", "content": ""}
 
-    def chat_stream(self, user_input: str) -> Generator[str, None, None]:
+    def chat_stream(self, user_input: Union[str, list[dict]]) -> Generator[str, None, None]:
         """流式对话"""
         if not self.running:
             return
 
+        # 提取文本部分（多模态消息）
+        if isinstance(user_input, list):
+            user_text = "".join(
+                part.get("text", "") for part in user_input if part.get("type") == "text"
+            )
+        else:
+            user_text = user_input
+
         self.memory.add_message("user", user_input)
-        context = self._augment_context(user_input)
+        context = self._augment_context(user_text)
         messages = self._build_messages(context)
 
         max_rounds = 5
@@ -192,9 +261,26 @@ class AgentBrain:
     def _pre_check(self, user_input: str) -> CritiqueResult:
         if not get("critic.enabled", True):
             return CritiqueResult(is_feasible=True)
+        # 简短问候/开始指令跳过检查
+        _greetings = {"开始", "开始吧", "你好", "嗨", "hi", "hello", "🐱", "🐱 开始", "🐱 开始吧"}
+        clean = user_input.strip().lower()
+        if clean in _greetings or len(clean) <= 4:
+            return CritiqueResult(is_feasible=True)
         request_type = "copywriting"
         if any(kw in user_input for kw in ["视频", "剪辑", "出片", "合成"]):
             request_type = "clip"
+            # 用户输入中可能已包含视频路径或时长信息
+            import re as _re
+            has_paths = bool(_re.search(r'([a-zA-Z]:[/\\]|/e/|\.mp4|\.mov|\.avi)', user_input))
+            has_duration = bool(_re.search(r'\d+\s*秒', user_input))
+            params = {"input": user_input}
+            if has_paths:
+                params["materials"] = user_input
+            if has_duration:
+                dur_match = _re.search(r'(\d+)\s*秒', user_input)
+                if dur_match:
+                    params["duration"] = float(dur_match.group(1))
+            return self.critic.review(request_type, params)
         elif any(kw in user_input for kw in ["照片", "图片", "封面", "卡片"]):
             request_type = "composition"
         return self.critic.review(request_type, {"input": user_input})

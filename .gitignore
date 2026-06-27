@@ -28,3 +28,26 @@ venv/
 # OS
 Thumbs.db
 .DS_Store
+
+# 敏感配置（含API Key）
+config.yaml
+*.local.yaml
+*.key
+.doubao_key
+.skillhub_key
+.env
+
+# 用户数据
+data/user_prefs/
+data/shared/
+
+# 测试/临时文件
+_test_*.py
+rag_fill*.py
+test_skill_system.py
+
+# user_memory 参考文件（每人不同）
+skills/xhs-content-factory/references/user_memory_*
+
+# 打包产物
+*.spec

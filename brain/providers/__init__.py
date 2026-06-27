@@ -46,3 +46,7 @@ def get_provider(config: dict = None) -> BaseLLMProvider:
 # 注册 OpenAI 兼容协议（默认）
 from brain.providers.openai_compat import OpenAICompatProvider
 register_provider("openai_compat", OpenAICompatProvider)
+
+# 注册 Anthropic/Claude
+from brain.providers.anthropic import AnthropicProvider
+register_provider("anthropic", AnthropicProvider)
