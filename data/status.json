@@ -1,0 +1,14 @@
+{
+  "agents": {
+    "nannan": {"name": "楠楠", "icon": "🧠", "desc": "Hermes Agent · 主调度", "status": "offline", "pids": [], "cpu": 0, "mem": 0, "msg": "等待同步", "task": "", "work_status": "offline"},
+    "cc": {"name": "CC", "icon": "⚡", "desc": "Claude Code CLI · 执行者", "status": "offline", "pids": [], "cpu": 0, "mem": 0, "msg": "等待同步", "task": "", "work_status": "offline"},
+    "codex": {"name": "Codex", "icon": "💻", "desc": "Codex CLI · 编码", "status": "offline", "pids": [], "cpu": 0, "mem": 0, "msg": "等待同步", "task": "", "work_status": "offline"},
+    "kimi": {"name": "Kimi", "icon": "👁️", "desc": "Kimi K2.5 · 视觉分析", "status": "offline", "pids": [], "cpu": 0, "mem": 0, "msg": "等待同步", "task": "", "work_status": "offline"}
+  },
+  "system": {"cpu": 0, "memory": 0, "disk": 0, "process_count": 0},
+  "ports": [],
+  "pipeline": {"title": "等待首次同步", "steps": []},
+  "balances": {},
+  "timestamp": "--:--:--",
+  "_sync_time": "等待首次同步"
+}
