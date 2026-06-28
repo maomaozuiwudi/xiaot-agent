@@ -57,3 +57,17 @@ output:
 image_gen:
   provider: ""          # 可选: jimeng, openai, gemini, main_model
   api_key: ""           # OpenAI/Gemini 的 Key（即梦走 ~/.jimeng_key）
+
+# MCP 服务器（可选）
+# 在此配置外部 MCP server，server 的工具会自动注册到 ToolRegistry
+# 工具名以 mcp_<server_name>_<original_name> 格式注册
+mcp_servers:
+  # 示例：本地 Python MCP server
+  # my_server:
+  #   command: python
+  #   args: ["C:/path/to/mcp_server.py"]
+
+  # 示例：uiautomation MCP server
+  # uiautomation:
+  #   command: python
+  #   args: ["E:/任务/任务主线/uiautomation_mcp/run_server.py"]

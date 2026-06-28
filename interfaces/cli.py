@@ -543,16 +543,17 @@ def show_help():
         "  • 「帮我做6个穿搭视频，35秒」\n"
         "  • 「分析一下这些素材」\n"
         "  • 「换个风格，改成小清新」\n"
-        "  • 「保存当前BGM偏好」\n\n"
-        "[dim]━━━━━━━━━━━━━━━━━━━━[/dim]\n\n"
-        "[bold]系统命令：[/bold]\n"
-        "  /help     — 显示帮助\n"
-        "  /quit     — 退出\n"
-        "  /reset    — 重置对话\n"
-        "  /privacy  — 切换隐私模式\n"
-        "  /prefs    — 查看你的偏好\n"
-        "  /trends   — 查看社区趋势\n"
-        "  /model    — 查看当前模型",
+        "  • 「保存当前BGM偏好」\\n\\n"
+        "[dim]━━━━━━━━━━━━━━━━━━━━[/dim]\\n\\n"
+        "[bold]系统命令：[/bold]\\n"
+        "  /help     — 显示帮助\\n"
+        "  /quit     — 退出\\n"
+        "  /reset    — 重置对话\\n"
+        "  /privacy  — 切换隐私模式\\n"
+        "  /prefs    — 查看你的偏好\\n"
+        "  /trends   — 查看社区趋势\\n"
+        "  /model    — 查看当前模型\\n"
+        "  /mcp      — 查看已连接的 MCP server 及工具列表",
         border_style="cyan", box=box.ROUNDED, padding=(1, 2),
     ))
     console.print()
@@ -618,6 +619,84 @@ def _handle_file_input(text: str, brain: AgentBrain) -> tuple[bool, str]:
         f"调 vision_analyze 分析画面内容。"
     )
     return True, text
+
+
+def _handle_mcp_command(cmd: str, brain: "AgentBrain"):
+    """处理 /mcp 系统命令"""
+    console.print()
+
+    if not brain.mcp_manager or not brain.mcp_manager.is_connected():
+        console.print("[yellow]⚠️ 没有已连接的 MCP server[/yellow]")
+        console.print("[dim]请在 config.yaml 中配置 mcp_servers[/dim]")
+        return
+
+    parts = cmd.split(maxsplit=2)
+    sub = parts[1] if len(parts) > 1 else ""
+
+    if sub == "list" or not sub:
+        # 列出所有已连接的 MCP server 及其工具
+        servers = brain.mcp_manager.connected_servers()
+        for srv_name in servers:
+            tools = brain.mcp_manager.list_tools(srv_name)
+            lines = [f"[bold cyan]🔌 {srv_name}[/bold cyan] [dim]({len(tools)} 个工具)[/dim]"]
+            for t in tools:
+                props = t.get("inputSchema", {}).get("properties", {})
+                params = ", ".join(
+                    f"[dim]{k}[/dim]: {v.get('type', 'any')}"
+                    for k, v in props.items()
+                )
+                lines.append(
+                    f"  • [bold]{t['name']}[/bold] — {t.get('description', '')[:80]}"
+                )
+                if params:
+                    lines.append(f"    [dim]参数: {params}[/dim]")
+
+                # 显示对应的注册工具名
+                full_name = f"mcp_{srv_name}_{t['name']}"
+                if brain.tool_registry.has_tool(full_name):
+                    lines.append(f"    [dim]→ 注册为: [green]{full_name}[/green][/dim]")
+
+            console.print(Panel(
+                "\n".join(lines),
+                border_style="blue", box=box.SIMPLE, padding=(1, 2),
+            ))
+        console.print(f"\n[dim]共 {len(servers)} 个 MCP server, 可通过 /mcp call <server> <tool> <args> 手动调用[/dim]")
+
+    elif sub == "call":
+        # /mcp call <server> <tool> <json_args>
+        if len(parts) < 3:
+            console.print("[yellow]用法: /mcp call <server> <tool> <json_args>[/yellow]")
+            return
+
+        call_parts = cmd.split(maxsplit=3)
+        if len(call_parts) < 4:
+            console.print("[yellow]用法: /mcp call <server> <tool> <json_args>[/yellow]")
+            return
+
+        srv_name = call_parts[2]
+        tool_name, args_str = call_parts[3].split(maxsplit=1) if " " in call_parts[3] else (call_parts[3], "{}")
+
+        if srv_name not in brain.mcp_manager._sessions:
+            console.print(f"[red]错误: server '{srv_name}' 未连接或不存在[/red]")
+            return
+
+        try:
+            args = json.loads(args_str) if args_str.strip() else {}
+        except json.JSONDecodeError:
+            console.print(f"[red]错误: args 不是有效的 JSON: {args_str}[/red]")
+            return
+
+        console.print(f"[dim]调用 MCP: {srv_name}/{tool_name} {json.dumps(args, ensure_ascii=False)}[/dim]")
+        result = brain.mcp_manager.call_tool(srv_name, tool_name, args)
+        if result.get("success"):
+            console.print(f"[green]✅ 成功[/green]")
+            console.print(result.get("result", ""))
+        else:
+            console.print(f"[red]❌ 失败: {result.get('result', '')}[/red]")
+
+    else:
+        console.print(f"[yellow]未知子命令: /mcp {sub}[/yellow]")
+        console.print("[dim]可用: /mcp list, /mcp call <server> <tool> <json_args>[/dim]")
 
 
 def main():
@@ -803,6 +882,11 @@ def main():
 
             elif cmd == "model":
                 console.print(f"\n[cyan]🔧 {get('llm.model', 'deepseek-chat')}[/cyan]")
+                _pause()
+                continue
+
+            elif cmd.startswith("mcp") or cmd.startswith("mcp "):
+                _handle_mcp_command(cmd, brain)
                 _pause()
                 continue
 

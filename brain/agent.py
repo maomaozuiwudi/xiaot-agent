@@ -3,9 +3,13 @@ AI 大脑 v2 — 多用户上下文 + 共享记忆
 """
 import time
 import json
+import logging
 from typing import Optional, Generator, Union
 
 from config_loader import get
+
+
+logger = logging.getLogger(__name__)
 from knowledge.rag import RAGEngine
 from knowledge.memory import UserManager, MemoryManager
 from evolution import AestheticEvolution, ClipRuleEvolution
@@ -47,6 +51,41 @@ class AgentBrain:
         self.tool_registry = get_registry()
         self.critic = Critic()
         self.hallucination_guard = HallucinationGuard()
+
+        # ── MCP 客户端（可选，有配置才初始化） ──
+        self.mcp_manager = None
+        mcp_servers = get("mcp_servers", {})
+        if mcp_servers:
+            try:
+                from brain.mcp_client import MCPManager, make_mcp_handler
+                self.mcp_manager = MCPManager(mcp_servers)
+                self.mcp_manager.connect_all()
+                if self.mcp_manager.is_connected():
+                    mcp_tools = self.mcp_manager.get_all_tools()
+                    for tool in mcp_tools:
+                        srv_name = tool["server_name"]
+                        org_name = tool["name"]
+                        full_name = f"mcp_{srv_name}_{org_name}"
+                        # 生成一份简短的参数描述
+                        props = tool.get("inputSchema", {}).get("properties", {})
+                        prop_lines = ", ".join(
+                            f"{k}: {v.get('type', 'any')}"
+                            for k, v in props.items()
+                        )
+                        param_desc = f"参数: {prop_lines}" if prop_lines else "无参数"
+                        self.tool_registry.register(
+                            name=full_name,
+                            description=tool.get("description", "") or f"MCP 工具: {full_name}. {param_desc}",
+                            handler=make_mcp_handler(self.mcp_manager, srv_name, org_name),
+                            parameters_schema=tool.get("inputSchema", {"type": "object", "properties": {}}),
+                            requires_confirm=False,
+                        )
+                    logger.info(
+                        "已注册 %d 个 MCP 工具（来自 %d 个 server）",
+                        len(mcp_tools), len(self.mcp_manager.connected_servers()),
+                    )
+            except Exception as e:
+                logger.warning("MCP 客户端初始化失败: %s", e)
 
         # 懒加载小红书搜索工具
         try:
