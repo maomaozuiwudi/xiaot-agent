@@ -4,28 +4,27 @@
 
 ## 🚀 快速开始
 
-### 方式一：源码安装（推荐）
+### 方式一：一键安装（推荐）
+
+```bash
+curl -L https://raw.githubusercontent.com/maomaozuiwudi/xiaot-agent/main/install.bat | cmd
+```
+
+装完之后终端直接输入 `xiaot` 启动。
+
+### 方式二：手动安装
 
 ```bash
 git clone https://github.com/maomaozuiwudi/xiaot-agent.git
 cd xiaot-agent
-
-# 安装核心依赖
 pip install -e .
-
-# 可选功能按需装
-pip install playwright        # 封面/卡片生成（需要）
-playwright install chromium   # Playwright 浏览器
-
-# 复制配置模板并填入 API Key
-cp config.example.yaml config.yaml
-# 编辑 config.yaml 填入你的 API Key
-
-# 启动
+playwright install chromium
 python main.py
 ```
 
-### 方式二：从 GitHub 安装
+装完可输 `xiaot` 替代 `python main.py`。
+
+### 方式三：从 GitHub 安装
 
 ```bash
 pip install git+https://github.com/maomaozuiwudi/xiaot-agent.git
