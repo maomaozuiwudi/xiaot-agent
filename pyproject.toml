@@ -31,6 +31,7 @@ dependencies = [
     "moviepy>=1.0.3",
     "numpy>=1.24",
     "edge-tts>=6.0",
+    "playwright>=1.40",
 ]
 
 [project.urls]
