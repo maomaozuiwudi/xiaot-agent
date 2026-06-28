@@ -1,7 +1,7 @@
 """
 进程监控模块 — 采集四个Agent的状态
 
-- 楠楠 (Hermes Agent)
+- 调度 (Hermes Agent)
 - CC (Claude Code CLI)
 - Codex (Codex CLI)
 - Kimi (Kimi API)
@@ -22,7 +22,7 @@ except ImportError:
 # ── Agent 定义 ──
 
 AGENTS = {
-    "楠楠": {
+    "调度": {
         "id": "nannan",
         "icon": "🧠",
         "desc": "Hermes Agent · 主调度",

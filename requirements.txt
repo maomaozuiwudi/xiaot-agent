@@ -30,6 +30,9 @@ moviepy>=1.0.3
 numpy>=1.24
 edge-tts>=6.0
 
+# 封面/卡片生成
+playwright>=1.40
+
 # 搜索
 httpx>=0.25
 

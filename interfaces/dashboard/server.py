@@ -1,6 +1,6 @@
 """
 仪表盘 — FastAPI 服务
-实时监控 楠楠/CC/Codex/Kimi 工作进程
+实时监控 Agent 工作进程
 """
 import sys
 import os

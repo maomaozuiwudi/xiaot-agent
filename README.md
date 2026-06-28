@@ -2,51 +2,27 @@
 
 一个**越用越懂你**的 AI 内容创作助手。支持 DeepSeek/豆包/GPT/Kimi 等多种模型，多人共享记忆，隐私自选。
 
-```bash
-# 一键安装
-pip install xiaot-agent
-
-# 装完直接在终端启动
-xiaot
-
-# 也可以装完整版（含视频剪辑+Web+GUI）
-pip install "xiaot-agent[all]"
-```
-
-```
-     ╭──────────────────────╮
-     │    ╭───╮  ╭───╮      │
-     │    │ ╮ │  │ ╮ │      │
-     │     ╰─╯    ╰─╯       │
-     │   ╭────────────╮     │
-     │   ╰────────────╯     │
-     │    ╲  ╱╲  ╱          │
-     │     ╲╱  ╲╱           │
-     ╰──────────────────────╯
-```
-
 ## 🚀 快速开始
 
-### 方式一：pip 安装（推荐）
+### 方式一：源码安装（推荐）
 
 ```bash
-# 1. 安装
-pip install xiaot-agent
+git clone https://github.com/maomaozuiwudi/xiaot-agent.git
+cd xiaot-agent
 
-# 2. 创建配置
+# 安装核心依赖
+pip install -e .
+
+# 可选功能按需装
+pip install playwright        # 封面/卡片生成（需要）
+playwright install chromium   # Playwright 浏览器
+
+# 复制配置模板并填入 API Key
 cp config.example.yaml config.yaml
 # 编辑 config.yaml 填入你的 API Key
 
-# 3. 启动
-xiaot
-```
-
-可选功能按需安装：
-```bash
-pip install "xiaot-agent[web]"     # + Web UI（FastAPI）
-pip install "xiaot-agent[gui]"     # + 桌面 GUI（CustomTkinter）
-pip install "xiaot-agent[video]"   # + 视频剪辑（MediaPipe + MoviePy）
-pip install "xiaot-agent[all]"     # 全部功能
+# 启动
+python main.py
 ```
 
 ### 方式二：从 GitHub 安装
