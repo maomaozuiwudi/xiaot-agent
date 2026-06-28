@@ -44,6 +44,7 @@ data/shared/
 
 # 测试/临时文件
 _test_*.py
+_verify_*.py
 rag_fill*.py
 test_skill_system.py
 

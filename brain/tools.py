@@ -25,6 +25,15 @@ logger = logging.getLogger(__name__)
 def _clip_videos(args: dict) -> tuple[str, dict]:
     """裁剪/拼接多个视频片段，用 MediaPipe 骨架检测自动选取最佳片段"""
     paths = args.get("paths", [])
+    # 兼容 MSYS 路径 /e/xxx → E:/xxx
+    import re as _re
+    _converted = []
+    for p in paths:
+        _m = _re.match(r'^/([a-zA-Z])/', p)
+        if _m:
+            p = f"{_m.group(1).upper()}:/{p[3:]}"
+        _converted.append(p)
+    paths = _converted
     duration = args.get("duration", 15.0)
 
     if not paths:
@@ -268,6 +277,80 @@ def _generate_card(args: dict) -> tuple[str, dict]:
     )
 
 
+def _generate_image(args: dict) -> tuple[str, dict]:
+    """根据配置的模型文生图 — 即梦/DALL·E/Gemini/主模型"""
+    prompt = args.get("prompt", "")
+    width = args.get("width", 1024)
+    height = args.get("height", 1024)
+    logger.info("[Tool:generate_image] prompt=%s, size=%dx%d", prompt[:50], width, height)
+
+    if not prompt:
+        return ("请提供图片描述(prompt)", {"status": "error", "error": "缺少prompt"})
+
+    from config_loader import get
+    gen_provider = get("image_gen.provider", "jimeng")
+    gen_api_key = get("image_gen.api_key", "")
+
+    if gen_provider == "jimeng":
+        from brain.engines.jimeng_engine import generate_image
+        try:
+            local_path = generate_image(prompt, width=width, height=height)
+            return (f"✅ 图片已生成: {local_path}", {"status": "ok", "output_path": local_path, "prompt": prompt})
+        except ValueError as e:
+            return (f"即梦API未配置: {e}", {"status": "error", "error": str(e), "tool": "generate_image"})
+        except Exception as e:
+            return (f"即梦API调用失败: {e}", {"status": "error", "error": str(e), "tool": "generate_image"})
+
+    elif gen_provider == "openai":
+        if not gen_api_key:
+            return ("OpenAI API Key 未配置", {"status": "error", "error": "缺少 OpenAI Key", "tool": "generate_image"})
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=gen_api_key, timeout=60)
+            resp = client.images.generate(model="dall-e-3", prompt=prompt, n=1,
+                                           size=f"{width}x{height}" if width == height else "1024x1024")
+            img_url = resp.data[0].url
+            import urllib.request, os, datetime
+            os.makedirs("output/images", exist_ok=True)
+            local_path = f"output/images/openai_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+            urllib.request.urlretrieve(img_url, local_path)
+            return (f"✅ 图片已生成: {local_path}", {"status": "ok", "output_path": local_path, "prompt": prompt})
+        except Exception as e:
+            return (f"DALL·E 调用失败: {e}", {"status": "error", "error": str(e), "tool": "generate_image"})
+
+    elif gen_provider == "main_model":
+        # 用主模型生图（需主模型支持多模态输出）
+        return ("主模型生图功能暂未实现", {"status": "error", "error": "主模型生图未实现", "tool": "generate_image"})
+
+    else:
+        return (f"未知的生图提供商: {gen_provider}", {"status": "error", "error": f"provider={gen_provider}", "tool": "generate_image"})
+
+
+def _generate_video(args: dict) -> tuple[str, dict]:
+    """根据配置的模型文生视频 — 即梦/DALL·E/Gemini/主模型"""
+    prompt = args.get("prompt", "")
+    image_url = args.get("image_url", "")
+    logger.info("[Tool:generate_video] prompt=%s", prompt[:50])
+
+    if not prompt:
+        return ("请提供视频描述(prompt)", {"status": "error", "error": "缺少prompt"})
+
+    from config_loader import get
+    gen_provider = get("image_gen.provider", "jimeng")
+
+    if gen_provider == "jimeng":
+        from brain.engines.jimeng_engine import generate_video
+        try:
+            local_path = generate_video(prompt, image_url=image_url or None)
+            return (f"✅ 视频已生成: {local_path}", {"status": "ok", "output_path": local_path, "prompt": prompt})
+        except ValueError as e:
+            return (f"即梦API未配置: {e}", {"status": "error", "error": str(e), "tool": "generate_video"})
+        except Exception as e:
+            return (f"即梦API调用失败: {e}", {"status": "error", "error": str(e), "tool": "generate_video"})
+    else:
+        return (f"视频生成仅支持即梦，当前提供商: {gen_provider}", {"status": "error", "error": "仅即梦支持视频生成"})
+
+
 def _search_web(args: dict) -> tuple[str, dict]:
     """通过 SearXNG 搜索引擎检索网络信息"""
     query = args.get("query", "")
@@ -505,6 +588,52 @@ _BUILTIN_TOOLS: list[dict] = [
                 },
             },
             "required": ["text"],
+        },
+    },
+    {
+        "name": "generate_image",
+        "description": "AI文生图。默认跳过不执行，仅当用户明确说用即梦或主动要求生图时才调用。调即梦需消耗API额度。",
+        "handler": _generate_image,
+        "requires_confirm": True,
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "prompt": {
+                    "type": "string",
+                    "description": "图片描述文本，越具体越好。如：'一只橘猫坐在沙发上，高清写实'",
+                },
+                "width": {
+                    "type": "integer",
+                    "description": "图片宽度（像素），默认1024",
+                    "default": 1024,
+                },
+                "height": {
+                    "type": "integer",
+                    "description": "图片高度（像素），默认1024",
+                    "default": 1024,
+                },
+            },
+            "required": ["prompt"],
+        },
+    },
+    {
+        "name": "generate_video",
+        "description": "调用即梦AI文生视频/图生视频（即梦视频3.0 1080P）。消耗API额度。",
+        "handler": _generate_video,
+        "requires_confirm": True,
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "prompt": {
+                    "type": "string",
+                    "description": "视频描述文本，越具体越好。如：'海边日落，唯美风格'",
+                },
+                "image_url": {
+                    "type": "string",
+                    "description": "可选，参考图片URL。传了就是图生视频模式",
+                },
+            },
+            "required": ["prompt"],
         },
     },
 ]

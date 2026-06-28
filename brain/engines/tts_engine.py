@@ -33,19 +33,15 @@ def synthesize(text, voice_id="S_wHXLNCs52", speed_ratio=1.1, output_path=None):
 
     request_json = {
         "app": {"cluster": "volcano_icl"},
-        "voice": {
-            "voice_type": "voice_clone",
-            "voice_id": voice_id,
-            "speed_ratio": speed_ratio,
-        },
+        "user": {"uid": "豆包语音"},
         "audio": {
+            "voice_type": voice_id,
             "encoding": "mp3",
-            "sample_rate": 24000,
+            "speed_ratio": speed_ratio,
         },
         "request": {
             "reqid": str(uuid.uuid4()),
             "text": text,
-            "text_type": "plain",
             "operation": "query",
         },
     }

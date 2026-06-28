@@ -52,3 +52,8 @@ output:
   frames: output/frames/
   final: output/final/
   logs: data/logs/
+
+# 图片/视频生成（登录时选择，也可手动改）
+image_gen:
+  provider: ""          # 可选: jimeng, openai, gemini, main_model
+  api_key: ""           # OpenAI/Gemini 的 Key（即梦走 ~/.jimeng_key）

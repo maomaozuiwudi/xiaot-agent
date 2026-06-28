@@ -39,6 +39,8 @@ def main():
         _start_web()
     elif "--gui" in args:
         _start_gui()
+    elif "--dashboard" in args:
+        _start_dashboard()
     else:
         _start_cli()
 
@@ -59,6 +61,12 @@ def _start_web():
 def _start_gui():
     """启动 Desktop GUI 模式"""
     from interfaces.gui.app import run
+    run()
+
+
+def _start_dashboard():
+    """启动实时监控仪表盘"""
+    from interfaces.dashboard.server import run
     run()
 
 

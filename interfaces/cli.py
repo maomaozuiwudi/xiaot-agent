@@ -68,8 +68,8 @@ _KEY_FILE = Path.home() / ".xhs_agent_auth.json"
 
 
 def _save_auth(api_key: str, provider: dict, vision_key: str = "", vision_provider: dict = None,
-               rnote_api_key: str = ""):
-    """保存登录态到本地（含看图 Key + Rnote Key）"""
+               rnote_api_key: str = "", gen_provider: str = "", gen_api_key: str = ""):
+    """保存登录态到本地（含看图 Key + Rnote Key + 生图配置）"""
     try:
         data = {
             "api_key": api_key,
@@ -81,6 +81,8 @@ def _save_auth(api_key: str, provider: dict, vision_key: str = "", vision_provid
             "vision_base_url": vision_provider["base_url"] if vision_provider else "",
             "vision_model": vision_provider["model"] if vision_provider else "",
             "rnote_api_key": rnote_api_key,
+            "gen_provider": gen_provider,
+            "gen_api_key": gen_api_key,
             "timestamp": datetime.now().isoformat(),
         }
         _KEY_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -90,7 +92,7 @@ def _save_auth(api_key: str, provider: dict, vision_key: str = "", vision_provid
 
 
 def _load_auth() -> tuple:
-    """读取保存的登录态，返回 (api_key, provider, vision_key, vision_provider, rnote_api_key) 或全 None"""
+    """读取保存的登录态，返回 (api_key, provider, vision_key, vision_prov, rnote_key, gen_provider, gen_api_key) 或全 None"""
     try:
         if _KEY_FILE.exists():
             data = json.loads(_KEY_FILE.read_text(encoding="utf-8"))
@@ -109,11 +111,13 @@ def _load_auth() -> tuple:
                     "model": data.get("vision_model", "kimi-k2.5"),
                 }
             rnote_key = data.get("rnote_api_key", "")
+            gen_provider = data.get("gen_provider", "")
+            gen_api_key = data.get("gen_api_key", "")
             if key:
-                return key, prov, vision_key, vision_prov, rnote_key
+                return key, prov, vision_key, vision_prov, rnote_key, gen_provider, gen_api_key
     except Exception:
         pass
-    return None, None, None, None, None
+    return None, None, None, None, None, None, None
 
 
 def choose_provider(saved_key=None, saved_prov=None) -> dict:
@@ -234,12 +238,100 @@ def _choose_vision_provider() -> tuple:
         return vision_key, vision_prov
 
 
+def _choose_image_gen_provider() -> tuple:
+    """选择图片/视频生成模型，返回 (provider_name, api_key)"""
+    console.print()
+    console.print(Panel(
+        "[bold]🎨 配置图片/视频生成[/bold]\n\n"
+        "选择用于文生图、文生视频的 AI 模型。\n"
+        "即梦需要火山引擎 AK/SK（已保存则自动读取）。\n"
+        "不配置则相关工具不可用。",
+        border_style="magenta", box=box.SIMPLE, padding=(1, 2),
+    ))
+
+    # 检测即梦 Key 是否存在
+    jimeng_key_file = Path.home() / ".jimeng_key"
+    has_jimeng = jimeng_key_file.exists() and len(jimeng_key_file.read_text().strip().splitlines()) >= 2
+
+    GEN_PROVIDERS = {
+        "1": {"name": "即梦AI（火山引擎）", "api_key": "", "has_key": has_jimeng},
+        "2": {"name": "OpenAI (DALL·E/GPT-4o)", "api_key": ""},
+        "3": {"name": "Google Gemini", "api_key": ""},
+        "4": {"name": "使用主模型（如支持）", "api_key": ""},
+    }
+
+    while True:
+        lines = ["[bold]选择图片/视频生成模型：[/bold]\n"]
+        for k, v in GEN_PROVIDERS.items():
+            status = " ✅ 已配置" if v.get("has_key") else ""
+            lines.append(f"  [bold cyan]{k}️⃣  {v['name']}[/bold cyan]{status}\n")
+        lines.append("  [bold]0️⃣  不配置（跳过）[/bold]\n")
+        if has_jimeng:
+            lines.append("  [dim]即梦 Key 已存在 ~/.jimeng_key[/dim]")
+        else:
+            lines.append("  [dim]即梦需要填入 AccessKey 和 SecretKey[/dim]")
+
+        console.print(Panel(
+            "".join(lines),
+            border_style="magenta", box=box.ROUNDED, padding=(1, 2),
+        ))
+
+        choice = Prompt.ask("[bold]请选择[/bold]", choices=["0", "1", "2", "3", "4"], default="0")
+
+        if choice == "0":
+            return "", ""
+
+        gen_prov = GEN_PROVIDERS[choice]
+        name = gen_prov["name"]
+
+        if choice == "1":
+            # 即梦：检查 Key，没有则让用户输入
+            if has_jimeng:
+                console.print(f"\n[green]✅ 即梦 Key 已存在 ~/.jimeng_key[/green]")
+                if not Confirm.ask("[bold]更换 Key？[/bold]", default=False):
+                    return "jimeng", ""
+
+            console.print(f"\n[dim]输入即梦 [bold]AccessKey[/bold] 和 [bold]SecretKey[/bold]（火山引擎 IAM 密钥管理）[/dim]")
+            ak = Prompt.ask("[bold cyan]🔑 AccessKey[/bold cyan]").strip()
+            if not ak:
+                continue
+            sk = Prompt.ask("[bold cyan]🔑 SecretKey[/bold cyan]").strip()
+            if not sk:
+                continue
+            # 保存
+            jimeng_key_file.write_text(f"{ak}\n{sk}")
+            jimeng_key_file.chmod(0o600)
+            return "jimeng", ""
+
+        elif choice == "2":
+            # OpenAI DALL-E
+            console.print(f"\n[dim]输入 OpenAI API Key（用于 DALL·E / GPT-4o 生图）[/dim]")
+            key = Prompt.ask("[bold cyan]🔑 OpenAI API Key[/bold cyan]").strip()
+            while not key:
+                console.print("[red]Key 不能为空[/red]")
+                key = Prompt.ask("[bold cyan]🔑 OpenAI API Key[/bold cyan]").strip()
+            return "openai", key
+
+        elif choice == "3":
+            # Gemini
+            console.print(f"\n[dim]输入 Google Gemini API Key[/dim]")
+            key = Prompt.ask("[bold cyan]🔑 Gemini API Key[/bold cyan]").strip()
+            while not key:
+                console.print("[red]Key 不能为空[/red]")
+                key = Prompt.ask("[bold cyan]🔑 Gemini API Key[/bold cyan]").strip()
+            return "gemini", key
+
+        elif choice == "4":
+            # 主模型
+            return "main_model", ""
+
+
 def key_login() -> tuple:
     """Key 输入 + 隐私选择，返回 (api_key, privacy_mode, provider_info, rnote_api_key)"""
     print_logo()
 
     # 检查是否有保存的登录态
-    saved_key, saved_prov, saved_vision_key, saved_vision_prov, saved_rnote_key = _load_auth()
+    saved_key, saved_prov, saved_vision_key, saved_vision_prov, saved_rnote_key, saved_gen_prov, saved_gen_ak = _load_auth()
 
     # 选择模型（含继续上次登录）
     provider, mode = choose_provider(saved_key, saved_prov)
@@ -290,6 +382,19 @@ def key_login() -> tuple:
     if mode == "continue" or rnote_api_key != saved_rnote_key:
         _save_auth(api_key, provider, vision_key, vision_prov, rnote_api_key)
 
+    # ── 图片/视频生成模型配置 ──
+    gen_provider = ""
+    gen_api_key = ""
+    if mode == "continue":
+        gen_provider = saved_gen_prov or ""
+        gen_api_key = saved_gen_ak or ""
+        console.print(f"\n[dim]🎨 生图: {gen_provider or '未配置'}[/dim]")
+    else:
+        gen_provider, gen_api_key = _choose_image_gen_provider()
+
+    # 保存生图配置
+    _save_auth(api_key, provider, vision_key, vision_prov, rnote_api_key, gen_provider, gen_api_key)
+
     # 设为环境变量，供搜索模块使用
     if rnote_api_key:
         os.environ["RNOTE_API_KEY"] = rnote_api_key
@@ -326,6 +431,9 @@ def key_login() -> tuple:
         provider["vision_name"] = vision_prov["name"]
         provider["vision_base_url"] = vision_prov["base_url"]
         provider["vision_model"] = vision_prov["model"]
+    # 生图配置带回
+    provider["gen_provider"] = gen_provider
+    provider["gen_api_key"] = gen_api_key
     return api_key, user_mgr.privacy_mode, provider, rnote_api_key
 
 
@@ -545,6 +653,16 @@ def main():
         cfg["rnote"] = {"api_key": rnote_api_key}
     elif "rnote" in cfg:
         cfg.pop("rnote", None)
+    # 图片/视频生成配置
+    gen_provider = provider.get("gen_provider", "")
+    gen_api_key = provider.get("gen_api_key", "")
+    if gen_provider:
+        gen_cfg = {"provider": gen_provider}
+        if gen_api_key:
+            gen_cfg["api_key"] = gen_api_key
+        cfg["image_gen"] = gen_cfg
+    elif "image_gen" in cfg:
+        cfg.pop("image_gen", None)
     with open(cfg_path, "w", encoding="utf-8") as f:
         yaml.dump(cfg, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
 
