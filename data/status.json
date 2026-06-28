@@ -10,7 +10,7 @@
         5460
       ],
       "cpu": 0,
-      "mem": 0.26406392892706504,
+      "mem": 0.27945720072874236,
       "msg": "PID 5460 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -44,28 +44,23 @@
       "name": "Kimi",
       "icon": "👁️",
       "desc": "Kimi K2.5 · 视觉分析",
-      "status": "running",
-      "pids": [
-        31028,
-        32260,
-        34588,
-        39360
-      ],
+      "status": "offline",
+      "pids": [],
       "cpu": 0,
-      "mem": 0.13571893989118583,
-      "msg": "PID 39360 · 运行中",
+      "mem": 0,
+      "msg": "未运行",
       "task": "",
-      "work_status": "idle"
+      "work_status": "offline"
     }
   },
   "system": {
-    "cpu": 0.5,
-    "memory": 46.9,
-    "mem_used_gb": 15.0,
+    "cpu": 3.4,
+    "memory": 46.8,
+    "mem_used_gb": 14.9,
     "mem_total_gb": 31.9,
     "disk": 84.6,
     "boot_time": "02:48:30",
-    "process_count": 493
+    "process_count": 486
   },
   "ports": [
     {
@@ -81,14 +76,14 @@
       "process": "python.exe"
     }
   ],
-  "timestamp": "21:00:18",
+  "timestamp": "21:02:18",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥47.11",
+      "balance": "¥46.93",
       "status": "✅"
     },
     "Kimi": {
@@ -108,5 +103,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-06-28 21:00:18"
+  "_sync_time": "2026-06-28 21:02:18"
 }
