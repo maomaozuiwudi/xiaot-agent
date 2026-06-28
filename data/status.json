@@ -10,7 +10,7 @@
         5460
       ],
       "cpu": 0,
-      "mem": 0.17597091149681401,
+      "mem": 0.34013394058675134,
       "msg": "PID 5460 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -54,13 +54,13 @@
     }
   },
   "system": {
-    "cpu": 1.0,
-    "memory": 42.3,
-    "mem_used_gb": 13.5,
+    "cpu": 1.6,
+    "memory": 44.1,
+    "mem_used_gb": 14.1,
     "mem_total_gb": 31.9,
     "disk": 84.6,
     "boot_time": "02:48:30",
-    "process_count": 424
+    "process_count": 433
   },
   "ports": [
     {
@@ -70,7 +70,7 @@
       "process": "python.exe"
     }
   ],
-  "timestamp": "17:30:12",
+  "timestamp": "17:32:12",
   "pipeline": {
     "title": "",
     "steps": []
@@ -97,5 +97,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-06-28 17:30:12"
+  "_sync_time": "2026-06-28 17:32:12"
 }
