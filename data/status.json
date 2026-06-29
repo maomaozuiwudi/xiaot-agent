@@ -10,7 +10,7 @@
         9032
       ],
       "cpu": 0,
-      "mem": 0.6121574339702738,
+      "mem": 0.836351832827156,
       "msg": "PID 9032 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -54,16 +54,16 @@
     }
   },
   "system": {
-    "cpu": 21.0,
-    "memory": 22.0,
-    "mem_used_gb": 7.0,
+    "cpu": 12.7,
+    "memory": 19.1,
+    "mem_used_gb": 6.1,
     "mem_total_gb": 31.9,
-    "disk": 74.6,
+    "disk": 74.8,
     "boot_time": "17:13:25",
-    "process_count": 221
+    "process_count": 215
   },
   "ports": [],
-  "timestamp": "17:14:32",
+  "timestamp": "17:16:13",
   "pipeline": {
     "title": "",
     "steps": []
@@ -90,5 +90,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-06-29 17:14:32"
+  "_sync_time": "2026-06-29 17:16:13"
 }
