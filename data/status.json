@@ -12,7 +12,7 @@
         15912
       ],
       "cpu": 0,
-      "mem": 0.490146632865209,
+      "mem": 0.9119796464614836,
       "msg": "PID 15912 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -56,16 +56,16 @@
     }
   },
   "system": {
-    "cpu": 6.0,
-    "memory": 17.7,
-    "mem_used_gb": 5.6,
+    "cpu": 6.6,
+    "memory": 19.1,
+    "mem_used_gb": 6.1,
     "mem_total_gb": 31.9,
     "disk": 74.8,
     "boot_time": "17:13:25",
-    "process_count": 213
+    "process_count": 212
   },
   "ports": [],
-  "timestamp": "17:18:10",
+  "timestamp": "17:20:11",
   "pipeline": {
     "title": "",
     "steps": []
@@ -92,5 +92,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-06-29 17:18:10"
+  "_sync_time": "2026-06-29 17:20:11"
 }
