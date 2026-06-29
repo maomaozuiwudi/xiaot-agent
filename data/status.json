@@ -10,7 +10,7 @@
         5460
       ],
       "cpu": 0,
-      "mem": 0.29641609256614926,
+      "mem": 0.3418668787942383,
       "msg": "PID 5460 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -26,7 +26,7 @@
         31140
       ],
       "cpu": 0,
-      "mem": 1.1800950654046733,
+      "mem": 1.220621916863903,
       "msg": "PID 31140 · 运行中",
       "task": "",
       "work_status": "idle"
@@ -57,13 +57,13 @@
     }
   },
   "system": {
-    "cpu": 4.2,
-    "memory": 41.8,
+    "cpu": 14.0,
+    "memory": 41.7,
     "mem_used_gb": 13.3,
     "mem_total_gb": 31.9,
     "disk": 84.8,
     "boot_time": "02:48:30",
-    "process_count": 359
+    "process_count": 366
   },
   "ports": [
     {
@@ -79,7 +79,7 @@
       "process": "python.exe"
     }
   ],
-  "timestamp": "15:58:54",
+  "timestamp": "16:00:54",
   "pipeline": {
     "title": "",
     "steps": []
@@ -106,5 +106,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-06-29 15:58:54"
+  "_sync_time": "2026-06-29 16:00:54"
 }
