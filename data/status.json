@@ -10,7 +10,7 @@
         6816
       ],
       "cpu": 0,
-      "mem": 0.24447640903240703,
+      "mem": 0.2031395867371548,
       "msg": "PID 6816 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -55,7 +55,7 @@
   },
   "system": {
     "cpu": 0.0,
-    "memory": 25.9,
+    "memory": 25.8,
     "mem_used_gb": 8.2,
     "mem_total_gb": 31.9,
     "disk": 64.8,
@@ -63,14 +63,14 @@
     "process_count": 197
   },
   "ports": [],
-  "timestamp": "21:32:21",
+  "timestamp": "21:34:21",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥40.55",
+      "balance": "¥40.54",
       "status": "✅"
     },
     "Kimi": {
@@ -90,5 +90,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-06-29 21:32:21"
+  "_sync_time": "2026-06-29 21:34:21"
 }
