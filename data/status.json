@@ -10,7 +10,7 @@
         16188
       ],
       "cpu": 0,
-      "mem": 0.2719876394895744,
+      "mem": 0.2726927660705519,
       "msg": "PID 16188 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -54,16 +54,16 @@
     }
   },
   "system": {
-    "cpu": 1.0,
-    "memory": 21.7,
+    "cpu": 3.7,
+    "memory": 21.6,
     "mem_used_gb": 6.9,
     "mem_total_gb": 31.9,
     "disk": 74.8,
     "boot_time": "17:13:25",
-    "process_count": 259
+    "process_count": 258
   },
   "ports": [],
-  "timestamp": "18:16:19",
+  "timestamp": "18:18:19",
   "pipeline": {
     "title": "",
     "steps": []
@@ -90,5 +90,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-06-29 18:16:19"
+  "_sync_time": "2026-06-29 18:18:19"
 }
