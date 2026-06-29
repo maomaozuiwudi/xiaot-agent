@@ -6,16 +6,12 @@
       "desc": "Hermes Agent · 主调度",
       "status": "running",
       "pids": [
-        17396,
-        23280,
-        28700,
-        29396,
-        34492,
-        39916
+        8988,
+        9032
       ],
       "cpu": 0,
-      "mem": 0.5450987009895197,
-      "msg": "PID 39916 · 运行中",
+      "mem": 0.6121574339702738,
+      "msg": "PID 9032 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
       "work_status": "idle"
@@ -58,36 +54,23 @@
     }
   },
   "system": {
-    "cpu": 17.1,
-    "memory": 36.1,
-    "mem_used_gb": 11.5,
+    "cpu": 21.0,
+    "memory": 22.0,
+    "mem_used_gb": 7.0,
     "mem_total_gb": 31.9,
-    "disk": 84.9,
-    "boot_time": "02:48:30",
-    "process_count": 341
+    "disk": 74.6,
+    "boot_time": "17:13:25",
+    "process_count": 221
   },
-  "ports": [
-    {
-      "port": 7860,
-      "service": "小t Web",
-      "pid": 33188,
-      "process": "python.exe"
-    },
-    {
-      "port": 7861,
-      "service": "仪表盘",
-      "pid": 23068,
-      "process": "python.exe"
-    }
-  ],
-  "timestamp": "17:12:07",
+  "ports": [],
+  "timestamp": "17:14:32",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥42.59",
+      "balance": "¥42.51",
       "status": "✅"
     },
     "Kimi": {
@@ -107,5 +90,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-06-29 17:12:07"
+  "_sync_time": "2026-06-29 17:14:32"
 }
