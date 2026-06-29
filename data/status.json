@@ -10,7 +10,7 @@
         5460
       ],
       "cpu": 0,
-      "mem": 0.42777280869366097,
+      "mem": 0.3802544479145702,
       "msg": "PID 5460 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -54,13 +54,13 @@
     }
   },
   "system": {
-    "cpu": 1.8,
-    "memory": 33.3,
+    "cpu": 2.8,
+    "memory": 33.4,
     "mem_used_gb": 10.6,
     "mem_total_gb": 31.9,
     "disk": 84.8,
     "boot_time": "02:48:30",
-    "process_count": 300
+    "process_count": 301
   },
   "ports": [
     {
@@ -76,14 +76,14 @@
       "process": "python.exe"
     }
   ],
-  "timestamp": "16:50:56",
+  "timestamp": "16:52:56",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥43.21",
+      "balance": "¥43.08",
       "status": "✅"
     },
     "Kimi": {
@@ -103,5 +103,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-06-29 16:50:56"
+  "_sync_time": "2026-06-29 16:52:56"
 }
