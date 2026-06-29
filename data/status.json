@@ -10,7 +10,7 @@
         5460
       ],
       "cpu": 0,
-      "mem": 0.28691481066992763,
+      "mem": 0.3083554392508353,
       "msg": "PID 5460 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -20,13 +20,16 @@
       "name": "CC",
       "icon": "⚡",
       "desc": "Claude Code CLI · 执行者",
-      "status": "offline",
-      "pids": [],
+      "status": "running",
+      "pids": [
+        28460,
+        31140
+      ],
       "cpu": 0,
-      "mem": 0,
-      "msg": "未运行",
+      "mem": 1.1786011531568399,
+      "msg": "PID 31140 · 运行中",
       "task": "",
-      "work_status": "offline"
+      "work_status": "idle"
     },
     "codex": {
       "name": "Codex",
@@ -54,13 +57,13 @@
     }
   },
   "system": {
-    "cpu": 1.1,
-    "memory": 41.5,
-    "mem_used_gb": 13.3,
+    "cpu": 5.4,
+    "memory": 44.0,
+    "mem_used_gb": 14.0,
     "mem_total_gb": 31.9,
-    "disk": 84.6,
+    "disk": 84.8,
     "boot_time": "02:48:30",
-    "process_count": 348
+    "process_count": 367
   },
   "ports": [
     {
@@ -76,7 +79,7 @@
       "process": "python.exe"
     }
   ],
-  "timestamp": "15:52:54",
+  "timestamp": "15:54:54",
   "pipeline": {
     "title": "",
     "steps": []
@@ -103,5 +106,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-06-29 15:52:54"
+  "_sync_time": "2026-06-29 15:54:54"
 }
