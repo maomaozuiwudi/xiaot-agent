@@ -12,7 +12,7 @@
         39484
       ],
       "cpu": 0,
-      "mem": 0.9025739749491233,
+      "mem": 0.9114418380522636,
       "msg": "PID 39484 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -56,13 +56,13 @@
     }
   },
   "system": {
-    "cpu": 0.3,
-    "memory": 33.8,
-    "mem_used_gb": 10.8,
+    "cpu": 6.4,
+    "memory": 34.3,
+    "mem_used_gb": 10.9,
     "mem_total_gb": 31.9,
-    "disk": 84.9,
+    "disk": 84.8,
     "boot_time": "02:48:30",
-    "process_count": 326
+    "process_count": 337
   },
   "ports": [
     {
@@ -78,14 +78,14 @@
       "process": "python.exe"
     }
   ],
-  "timestamp": "17:06:30",
+  "timestamp": "17:08:31",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥42.71",
+      "balance": "¥42.65",
       "status": "✅"
     },
     "Kimi": {
@@ -105,5 +105,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-06-29 17:06:30"
+  "_sync_time": "2026-06-29 17:08:31"
 }
