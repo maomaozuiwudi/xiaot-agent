@@ -6,14 +6,12 @@
       "desc": "Hermes Agent · 主调度",
       "status": "running",
       "pids": [
-        2916,
-        3748,
-        4120,
-        17540
+        3676,
+        16188
       ],
       "cpu": 0,
-      "mem": 0.40989366691158863,
-      "msg": "PID 17540 · 运行中",
+      "mem": 0.8671742303244586,
+      "msg": "PID 16188 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
       "work_status": "idle"
@@ -56,23 +54,23 @@
     }
   },
   "system": {
-    "cpu": 0.8,
-    "memory": 19.0,
-    "mem_used_gb": 6.1,
+    "cpu": 4.8,
+    "memory": 18.3,
+    "mem_used_gb": 5.8,
     "mem_total_gb": 31.9,
     "disk": 74.8,
     "boot_time": "17:13:25",
-    "process_count": 218
+    "process_count": 209
   },
   "ports": [],
-  "timestamp": "17:24:12",
+  "timestamp": "17:26:17",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥42.36",
+      "balance": "¥42.30",
       "status": "✅"
     },
     "Kimi": {
@@ -92,5 +90,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-06-29 17:24:12"
+  "_sync_time": "2026-06-29 17:26:17"
 }
