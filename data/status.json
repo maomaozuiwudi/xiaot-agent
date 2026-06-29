@@ -10,7 +10,7 @@
         6816
       ],
       "cpu": 0,
-      "mem": 0.10230025285873105,
+      "mem": 0.10231222760447127,
       "msg": "PID 6816 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -54,16 +54,16 @@
     }
   },
   "system": {
-    "cpu": 2.8,
+    "cpu": 1.0,
     "memory": 26.4,
     "mem_used_gb": 8.4,
     "mem_total_gb": 31.9,
     "disk": 65.0,
     "boot_time": "20:36:35",
-    "process_count": 223
+    "process_count": 222
   },
   "ports": [],
-  "timestamp": "22:58:24",
+  "timestamp": "23:00:24",
   "pipeline": {
     "title": "",
     "steps": []
@@ -90,5 +90,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-06-29 22:58:24"
+  "_sync_time": "2026-06-29 23:00:24"
 }
