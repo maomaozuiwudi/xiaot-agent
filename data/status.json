@@ -10,7 +10,7 @@
         8664
       ],
       "cpu": 0,
-      "mem": 0.44650234441572106,
+      "mem": 0.2835619791284972,
       "msg": "PID 8664 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -54,23 +54,23 @@
     }
   },
   "system": {
-    "cpu": 0.0,
-    "memory": 30.4,
-    "mem_used_gb": 9.7,
+    "cpu": 2.4,
+    "memory": 29.4,
+    "mem_used_gb": 9.4,
     "mem_total_gb": 31.9,
     "disk": 66.7,
     "boot_time": "13:41:42",
     "process_count": 340
   },
   "ports": [],
-  "timestamp": "03:43:56",
+  "timestamp": "03:45:56",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥33.19",
+      "balance": "¥33.16",
       "status": "✅"
     },
     "Kimi": {
@@ -90,5 +90,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-02 03:43:56"
+  "_sync_time": "2026-07-02 03:45:56"
 }
