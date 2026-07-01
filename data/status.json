@@ -10,7 +10,7 @@
         8664
       ],
       "cpu": 0,
-      "mem": 0.1017733640461612,
+      "mem": 0.23650122836941803,
       "msg": "PID 8664 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -54,7 +54,7 @@
     }
   },
   "system": {
-    "cpu": 1.3,
+    "cpu": 1.6,
     "memory": 27.6,
     "mem_used_gb": 8.8,
     "mem_total_gb": 31.9,
@@ -63,7 +63,7 @@
     "process_count": 280
   },
   "ports": [],
-  "timestamp": "15:29:34",
+  "timestamp": "15:31:34",
   "pipeline": {
     "title": "",
     "steps": []
@@ -90,5 +90,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-01 15:29:34"
+  "_sync_time": "2026-07-01 15:31:34"
 }
