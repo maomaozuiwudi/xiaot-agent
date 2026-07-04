@@ -9,7 +9,7 @@
         14424
       ],
       "cpu": 0,
-      "mem": 0.4936364118761482,
+      "mem": 0.517527056543503,
       "msg": "PID 14424 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -53,16 +53,16 @@
     }
   },
   "system": {
-    "cpu": 0.8,
+    "cpu": 0.5,
     "memory": 23.3,
     "mem_used_gb": 7.4,
     "mem_total_gb": 31.9,
     "disk": 70.9,
     "boot_time": "15:43:54",
-    "process_count": 228
+    "process_count": 227
   },
   "ports": [],
-  "timestamp": "03:38:39",
+  "timestamp": "03:40:39",
   "pipeline": {
     "title": "",
     "steps": []
@@ -89,5 +89,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-05 03:38:39"
+  "_sync_time": "2026-07-05 03:40:39"
 }
