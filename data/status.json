@@ -9,7 +9,7 @@
         12376
       ],
       "cpu": 0,
-      "mem": 0.5962383050573591,
+      "mem": 0.5922346202331651,
       "msg": "PID 12376 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -53,16 +53,16 @@
     }
   },
   "system": {
-    "cpu": 2.0,
-    "memory": 20.0,
-    "mem_used_gb": 6.4,
+    "cpu": 0.5,
+    "memory": 20.2,
+    "mem_used_gb": 6.5,
     "mem_total_gb": 31.9,
     "disk": 70.8,
     "boot_time": "15:43:53",
-    "process_count": 212
+    "process_count": 218
   },
   "ports": [],
-  "timestamp": "21:28:07",
+  "timestamp": "21:30:08",
   "pipeline": {
     "title": "",
     "steps": []
@@ -89,5 +89,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-04 21:28:07"
+  "_sync_time": "2026-07-04 21:30:08"
 }
