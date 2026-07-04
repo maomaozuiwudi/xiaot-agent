@@ -53,23 +53,23 @@
     }
   },
   "system": {
-    "cpu": 1.0,
+    "cpu": 0.3,
     "memory": 20.1,
     "mem_used_gb": 6.4,
     "mem_total_gb": 31.9,
     "disk": 70.7,
     "boot_time": "15:43:53",
-    "process_count": 213
+    "process_count": 214
   },
   "ports": [],
-  "timestamp": "18:43:59",
+  "timestamp": "18:45:59",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥27.13",
+      "balance": "¥27.12",
       "status": "✅"
     },
     "Kimi": {
@@ -89,5 +89,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-04 18:43:59"
+  "_sync_time": "2026-07-04 18:45:59"
 }
