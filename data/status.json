@@ -59,10 +59,10 @@
     "mem_total_gb": 31.9,
     "disk": 70.5,
     "boot_time": "15:43:53",
-    "process_count": 161
+    "process_count": 160
   },
   "ports": [],
-  "timestamp": "17:05:54",
+  "timestamp": "17:07:54",
   "pipeline": {
     "title": "",
     "steps": []
@@ -89,5 +89,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-04 17:05:54"
+  "_sync_time": "2026-07-04 17:07:54"
 }
