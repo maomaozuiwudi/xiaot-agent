@@ -9,7 +9,7 @@
         14328
       ],
       "cpu": 0,
-      "mem": 0.5132006866737769,
+      "mem": 0.5254507671060124,
       "msg": "PID 14328 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -53,23 +53,23 @@
     }
   },
   "system": {
-    "cpu": 0.8,
-    "memory": 14.9,
-    "mem_used_gb": 4.7,
+    "cpu": 0.0,
+    "memory": 14.2,
+    "mem_used_gb": 4.5,
     "mem_total_gb": 31.9,
     "disk": 70.4,
     "boot_time": "15:43:53",
-    "process_count": 163
+    "process_count": 157
   },
   "ports": [],
-  "timestamp": "15:52:22",
+  "timestamp": "15:54:22",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥30.32",
+      "balance": "¥30.23",
       "status": "✅"
     },
     "Kimi": {
@@ -89,5 +89,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-04 15:52:22"
+  "_sync_time": "2026-07-04 15:54:22"
 }
