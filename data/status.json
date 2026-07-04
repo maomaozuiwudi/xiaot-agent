@@ -9,7 +9,7 @@
         19108
       ],
       "cpu": 0,
-      "mem": 0.2817040447494841,
+      "mem": 0.5049423397677528,
       "msg": "PID 19108 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -54,22 +54,22 @@
   },
   "system": {
     "cpu": 0.0,
-    "memory": 23.0,
-    "mem_used_gb": 7.3,
+    "memory": 23.3,
+    "mem_used_gb": 7.4,
     "mem_total_gb": 31.9,
     "disk": 70.9,
     "boot_time": "15:43:54",
-    "process_count": 224
+    "process_count": 229
   },
   "ports": [],
-  "timestamp": "03:26:48",
+  "timestamp": "03:28:48",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥23.75",
+      "balance": "¥23.72",
       "status": "✅"
     },
     "Kimi": {
@@ -89,5 +89,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-05 03:26:48"
+  "_sync_time": "2026-07-05 03:28:48"
 }
