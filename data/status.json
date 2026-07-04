@@ -9,7 +9,7 @@
         12376
       ],
       "cpu": 0,
-      "mem": 0.562440034362372,
+      "mem": 0.5612210019681397,
       "msg": "PID 12376 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -62,14 +62,14 @@
     "process_count": 213
   },
   "ports": [],
-  "timestamp": "20:00:02",
+  "timestamp": "20:02:03",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥27.00",
+      "balance": "¥26.99",
       "status": "✅"
     },
     "Kimi": {
@@ -89,5 +89,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-04 20:00:02"
+  "_sync_time": "2026-07-04 20:02:03"
 }
