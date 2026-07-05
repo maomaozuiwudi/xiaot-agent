@@ -10,7 +10,7 @@
         9548
       ],
       "cpu": 0,
-      "mem": 0.24636841885936236,
+      "mem": 0.2935848413130644,
       "msg": "PID 9548 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -40,7 +40,7 @@
         21748
       ],
       "cpu": 0,
-      "mem": 0.050928593633171385,
+      "mem": 0.05094056837891161,
       "msg": "PID 21748 · 运行中",
       "task": "",
       "work_status": "idle"
@@ -59,13 +59,13 @@
     }
   },
   "system": {
-    "cpu": 0.5,
+    "cpu": 5.7,
     "memory": 25.3,
-    "mem_used_gb": 8.1,
+    "mem_used_gb": 8.0,
     "mem_total_gb": 31.9,
     "disk": 70.2,
     "boot_time": "09:58:16",
-    "process_count": 256
+    "process_count": 254
   },
   "ports": [
     {
@@ -75,7 +75,7 @@
       "process": "python.exe"
     }
   ],
-  "timestamp": "19:09:25",
+  "timestamp": "19:11:25",
   "pipeline": {
     "title": "",
     "steps": []
@@ -102,5 +102,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-05 19:09:25"
+  "_sync_time": "2026-07-05 19:11:25"
 }
