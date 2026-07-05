@@ -10,7 +10,7 @@
         9548
       ],
       "cpu": 0,
-      "mem": 0.5214642527495214,
+      "mem": 0.4165295558279411,
       "msg": "PID 9548 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -32,13 +32,18 @@
       "name": "Codex",
       "icon": "💻",
       "desc": "Codex CLI · 编码",
-      "status": "offline",
-      "pids": [],
+      "status": "running",
+      "pids": [
+        11028,
+        17460,
+        20196,
+        21748
+      ],
       "cpu": 0,
-      "mem": 0,
-      "msg": "未运行",
+      "mem": 0.22246682636187584,
+      "msg": "PID 21748 · 运行中",
       "task": "",
-      "work_status": "offline"
+      "work_status": "idle"
     },
     "kimi": {
       "name": "Kimi",
@@ -54,16 +59,23 @@
     }
   },
   "system": {
-    "cpu": 10.6,
-    "memory": 24.9,
-    "mem_used_gb": 7.9,
+    "cpu": 2.9,
+    "memory": 25.1,
+    "mem_used_gb": 8.0,
     "mem_total_gb": 31.9,
     "disk": 70.2,
     "boot_time": "09:58:16",
-    "process_count": 254
+    "process_count": 257
   },
-  "ports": [],
-  "timestamp": "18:45:24",
+  "ports": [
+    {
+      "port": 5000,
+      "service": "Codex",
+      "pid": 20196,
+      "process": "python.exe"
+    }
+  ],
+  "timestamp": "18:47:24",
   "pipeline": {
     "title": "",
     "steps": []
@@ -90,5 +102,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-05 18:45:24"
+  "_sync_time": "2026-07-05 18:47:24"
 }
