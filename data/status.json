@@ -10,7 +10,7 @@
         9548
       ],
       "cpu": 0,
-      "mem": 0.39489119027535685,
+      "mem": 0.571554614180877,
       "msg": "PID 9548 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -20,13 +20,16 @@
       "name": "CC",
       "icon": "⚡",
       "desc": "Claude Code CLI · 执行者",
-      "status": "offline",
-      "pids": [],
+      "status": "running",
+      "pids": [
+        9888,
+        17164
+      ],
       "cpu": 0,
-      "mem": 0,
-      "msg": "未运行",
+      "mem": 1.1546409085095894,
+      "msg": "PID 17164 · 运行中",
       "task": "",
-      "work_status": "offline"
+      "work_status": "idle"
     },
     "codex": {
       "name": "Codex",
@@ -40,7 +43,7 @@
         21748
       ],
       "cpu": 0,
-      "mem": 0.22226325568429206,
+      "mem": 0.2033910563976995,
       "msg": "PID 21748 · 运行中",
       "task": "",
       "work_status": "idle"
@@ -59,13 +62,13 @@
     }
   },
   "system": {
-    "cpu": 1.0,
-    "memory": 25.2,
-    "mem_used_gb": 8.0,
+    "cpu": 3.1,
+    "memory": 27.4,
+    "mem_used_gb": 8.7,
     "mem_total_gb": 31.9,
     "disk": 70.3,
     "boot_time": "09:58:16",
-    "process_count": 256
+    "process_count": 277
   },
   "ports": [
     {
@@ -75,14 +78,14 @@
       "process": "python.exe"
     }
   ],
-  "timestamp": "18:49:24",
+  "timestamp": "18:51:24",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥63.23",
+      "balance": "¥63.09",
       "status": "✅"
     },
     "Kimi": {
@@ -102,5 +105,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-05 18:49:24"
+  "_sync_time": "2026-07-05 18:51:24"
 }
