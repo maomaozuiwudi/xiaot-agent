@@ -10,7 +10,7 @@
         9548
       ],
       "cpu": 0,
-      "mem": 0.2722458444039858,
+      "mem": 0.5785718151846481,
       "msg": "PID 9548 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -40,7 +40,7 @@
         21748
       ],
       "cpu": 0,
-      "mem": 0.09495973371997392,
+      "mem": 0.07111801495118855,
       "msg": "PID 21748 · 运行中",
       "task": "",
       "work_status": "idle"
@@ -59,13 +59,13 @@
     }
   },
   "system": {
-    "cpu": 1.6,
-    "memory": 25.4,
+    "cpu": 5.5,
+    "memory": 25.3,
     "mem_used_gb": 8.1,
     "mem_total_gb": 31.9,
     "disk": 70.2,
     "boot_time": "09:58:16",
-    "process_count": 258
+    "process_count": 259
   },
   "ports": [
     {
@@ -75,14 +75,14 @@
       "process": "python.exe"
     }
   ],
-  "timestamp": "19:01:25",
+  "timestamp": "19:03:25",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥61.69",
+      "balance": "¥61.55",
       "status": "✅"
     },
     "Kimi": {
@@ -102,5 +102,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-05 19:01:25"
+  "_sync_time": "2026-07-05 19:03:25"
 }
