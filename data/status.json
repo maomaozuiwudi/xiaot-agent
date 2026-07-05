@@ -10,7 +10,7 @@
         9548
       ],
       "cpu": 0,
-      "mem": 0.10261159624797686,
+      "mem": 0.10246789929909418,
       "msg": "PID 9548 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -54,7 +54,7 @@
     }
   },
   "system": {
-    "cpu": 0.0,
+    "cpu": 2.8,
     "memory": 26.7,
     "mem_used_gb": 8.5,
     "mem_total_gb": 31.9,
@@ -63,7 +63,7 @@
     "process_count": 299
   },
   "ports": [],
-  "timestamp": "21:31:31",
+  "timestamp": "21:33:32",
   "pipeline": {
     "title": "",
     "steps": []
@@ -90,5 +90,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-05 21:31:31"
+  "_sync_time": "2026-07-05 21:33:32"
 }
