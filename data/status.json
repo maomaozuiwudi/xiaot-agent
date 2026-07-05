@@ -10,7 +10,7 @@
         9548
       ],
       "cpu": 0,
-      "mem": 0.2514816352904379,
+      "mem": 0.25556502358785416,
       "msg": "PID 9548 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -44,26 +44,31 @@
       "name": "Kimi",
       "icon": "👁️",
       "desc": "Kimi K2.5 · 视觉分析",
-      "status": "offline",
-      "pids": [],
+      "status": "running",
+      "pids": [
+        14828,
+        19256,
+        23032,
+        25272
+      ],
       "cpu": 0,
-      "mem": 0,
-      "msg": "未运行",
+      "mem": 0.13677554584483506,
+      "msg": "PID 25272 · 运行中",
       "task": "",
-      "work_status": "offline"
+      "work_status": "idle"
     }
   },
   "system": {
-    "cpu": 2.6,
-    "memory": 26.8,
-    "mem_used_gb": 8.5,
+    "cpu": 0.0,
+    "memory": 28.7,
+    "mem_used_gb": 9.1,
     "mem_total_gb": 31.9,
     "disk": 70.5,
     "boot_time": "09:58:16",
-    "process_count": 208
+    "process_count": 232
   },
   "ports": [],
-  "timestamp": "02:25:46",
+  "timestamp": "02:27:46",
   "pipeline": {
     "title": "",
     "steps": []
@@ -90,5 +95,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-06 02:25:46"
+  "_sync_time": "2026-07-06 02:27:46"
 }
