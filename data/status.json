@@ -10,7 +10,7 @@
         9548
       ],
       "cpu": 0,
-      "mem": 0.5742010329894665,
+      "mem": 0.3054158901044054,
       "msg": "PID 9548 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -32,13 +32,22 @@
       "name": "Codex",
       "icon": "💻",
       "desc": "Codex CLI · 编码",
-      "status": "offline",
-      "pids": [],
+      "status": "running",
+      "pids": [
+        4732,
+        7312,
+        13300,
+        15444,
+        17244,
+        17256,
+        18828,
+        18996
+      ],
       "cpu": 0,
-      "mem": 0,
-      "msg": "未运行",
+      "mem": 0.39171788265419766,
+      "msg": "PID 18996 · 运行中",
       "task": "",
-      "work_status": "offline"
+      "work_status": "idle"
     },
     "kimi": {
       "name": "Kimi",
@@ -54,23 +63,23 @@
     }
   },
   "system": {
-    "cpu": 1.6,
-    "memory": 25.0,
-    "mem_used_gb": 8.0,
+    "cpu": 0.8,
+    "memory": 25.3,
+    "mem_used_gb": 8.1,
     "mem_total_gb": 31.9,
     "disk": 70.2,
     "boot_time": "09:58:16",
-    "process_count": 252
+    "process_count": 261
   },
   "ports": [],
-  "timestamp": "18:31:23",
+  "timestamp": "18:33:23",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥13.69",
+      "balance": "¥13.45",
       "status": "✅"
     },
     "Kimi": {
@@ -90,5 +99,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-05 18:31:23"
+  "_sync_time": "2026-07-05 18:33:23"
 }
