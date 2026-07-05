@@ -10,7 +10,7 @@
         9548
       ],
       "cpu": 0,
-      "mem": 0.30817008162465687,
+      "mem": 0.6036589075104167,
       "msg": "PID 9548 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -54,23 +54,23 @@
     }
   },
   "system": {
-    "cpu": 13.5,
-    "memory": 25.2,
+    "cpu": 6.1,
+    "memory": 25.1,
     "mem_used_gb": 8.0,
     "mem_total_gb": 31.9,
     "disk": 70.5,
     "boot_time": "09:58:16",
-    "process_count": 256
+    "process_count": 259
   },
   "ports": [],
-  "timestamp": "18:15:23",
+  "timestamp": "18:17:23",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥15.91",
+      "balance": "¥15.89",
       "status": "✅"
     },
     "Kimi": {
@@ -90,5 +90,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-05 18:15:23"
+  "_sync_time": "2026-07-05 18:17:23"
 }
