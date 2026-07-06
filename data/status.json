@@ -10,7 +10,7 @@
         9732
       ],
       "cpu": 0,
-      "mem": 0.26986287000168124,
+      "mem": 0.5336784934045495,
       "msg": "PID 9732 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -54,23 +54,23 @@
     }
   },
   "system": {
-    "cpu": 0.3,
-    "memory": 22.0,
-    "mem_used_gb": 7.0,
+    "cpu": 6.2,
+    "memory": 27.2,
+    "mem_used_gb": 8.7,
     "mem_total_gb": 31.9,
-    "disk": 70.8,
-    "boot_time": "14:10:43",
-    "process_count": 200
+    "disk": 68.6,
+    "boot_time": "14:10:48",
+    "process_count": 221
   },
   "ports": [],
-  "timestamp": "14:40:31",
+  "timestamp": "15:12:44",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥52.56",
+      "balance": "¥51.89",
       "status": "✅"
     },
     "Kimi": {
@@ -90,5 +90,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-06 14:40:31"
+  "_sync_time": "2026-07-06 15:12:44"
 }
