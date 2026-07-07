@@ -56,13 +56,13 @@
     }
   },
   "system": {
-    "cpu": 1.1,
-    "memory": 34.1,
+    "cpu": 0.8,
+    "memory": 34.0,
     "mem_used_gb": 10.9,
     "mem_total_gb": 31.9,
-    "disk": 71.3,
+    "disk": 71.2,
     "boot_time": "16:44:09",
-    "process_count": 266
+    "process_count": 265
   },
   "ports": [
     {
@@ -72,7 +72,7 @@
       "process": "python.exe"
     }
   ],
-  "timestamp": "00:33:45",
+  "timestamp": "01:04:46",
   "pipeline": {
     "title": "",
     "steps": []
@@ -99,5 +99,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-08 00:33:45"
+  "_sync_time": "2026-07-08 01:04:46"
 }
