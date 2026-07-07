@@ -9,7 +9,7 @@
         6844
       ],
       "cpu": 0,
-      "mem": 1.0482483460598722,
+      "mem": 1.0164100882340428,
       "msg": "PID 6844 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -56,13 +56,13 @@
     }
   },
   "system": {
-    "cpu": 0.8,
+    "cpu": 1.5,
     "memory": 34.0,
     "mem_used_gb": 10.9,
     "mem_total_gb": 31.9,
     "disk": 71.2,
     "boot_time": "16:44:09",
-    "process_count": 265
+    "process_count": 266
   },
   "ports": [
     {
@@ -72,14 +72,14 @@
       "process": "python.exe"
     }
   ],
-  "timestamp": "01:04:46",
+  "timestamp": "01:35:48",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥32.66",
+      "balance": "¥32.45",
       "status": "✅"
     },
     "Kimi": {
@@ -99,5 +99,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-08 01:04:46"
+  "_sync_time": "2026-07-08 01:35:48"
 }
