@@ -10,7 +10,7 @@
         9388
       ],
       "cpu": 0,
-      "mem": 0.2347768649828258,
+      "mem": 0.15221099310398342,
       "msg": "PID 9388 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -54,23 +54,23 @@
     }
   },
   "system": {
-    "cpu": 3.9,
-    "memory": 27.9,
-    "mem_used_gb": 8.9,
+    "cpu": 0.8,
+    "memory": 35.4,
+    "mem_used_gb": 11.3,
     "mem_total_gb": 31.9,
-    "disk": 71.2,
+    "disk": 71.4,
     "boot_time": "14:12:40",
-    "process_count": 218
+    "process_count": 234
   },
   "ports": [],
-  "timestamp": "15:46:35",
+  "timestamp": "16:17:36",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥37.86",
+      "balance": "¥37.57",
       "status": "✅"
     },
     "Kimi": {
@@ -90,5 +90,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-07 15:46:35"
+  "_sync_time": "2026-07-07 16:17:36"
 }
