@@ -10,7 +10,7 @@
         9528
       ],
       "cpu": 0,
-      "mem": 0.09856413218778126,
+      "mem": 0.09928261693219467,
       "msg": "PID 9528 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -54,16 +54,16 @@
     }
   },
   "system": {
-    "cpu": 0.5,
-    "memory": 17.7,
-    "mem_used_gb": 5.6,
+    "cpu": 0.0,
+    "memory": 18.0,
+    "mem_used_gb": 5.7,
     "mem_total_gb": 31.9,
     "disk": 69.1,
     "boot_time": "17:04:46",
-    "process_count": 185
+    "process_count": 187
   },
   "ports": [],
-  "timestamp": "00:20:38",
+  "timestamp": "00:51:39",
   "pipeline": {
     "title": "",
     "steps": []
@@ -90,5 +90,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-10 00:20:38"
+  "_sync_time": "2026-07-10 00:51:39"
 }
