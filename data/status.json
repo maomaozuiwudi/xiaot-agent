@@ -53,16 +53,16 @@
     }
   },
   "system": {
-    "cpu": 2.2,
-    "memory": 19.7,
-    "mem_used_gb": 6.3,
+    "cpu": 0.0,
+    "memory": 20.0,
+    "mem_used_gb": 6.4,
     "mem_total_gb": 31.9,
     "disk": 66.5,
-    "boot_time": "13:43:29",
+    "boot_time": "13:43:30",
     "process_count": 170
   },
   "ports": [],
-  "timestamp": "19:25:37",
+  "timestamp": "19:56:40",
   "pipeline": {
     "title": "",
     "steps": []
@@ -89,5 +89,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-10 19:25:37"
+  "_sync_time": "2026-07-10 19:56:40"
 }
