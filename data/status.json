@@ -9,7 +9,7 @@
         9840
       ],
       "cpu": 0,
-      "mem": 1.033947446193875,
+      "mem": 1.0339354714481348,
       "msg": "PID 9840 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -53,7 +53,7 @@
     }
   },
   "system": {
-    "cpu": 0.8,
+    "cpu": 3.3,
     "memory": 19.8,
     "mem_used_gb": 6.3,
     "mem_total_gb": 31.9,
@@ -62,7 +62,7 @@
     "process_count": 170
   },
   "ports": [],
-  "timestamp": "00:35:52",
+  "timestamp": "01:06:53",
   "pipeline": {
     "title": "",
     "steps": []
@@ -89,5 +89,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-11 00:35:52"
+  "_sync_time": "2026-07-11 01:06:53"
 }
