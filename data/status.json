@@ -9,7 +9,7 @@
         9840
       ],
       "cpu": 0,
-      "mem": 1.0264273058690145,
+      "mem": 1.0519574637871714,
       "msg": "PID 9840 · 运行中",
       "sub_status": "gateway ⏳",
       "task": "",
@@ -53,23 +53,23 @@
     }
   },
   "system": {
-    "cpu": 0.3,
-    "memory": 19.5,
+    "cpu": 0.0,
+    "memory": 19.6,
     "mem_used_gb": 6.2,
     "mem_total_gb": 31.9,
-    "disk": 66.5,
+    "disk": 66.4,
     "boot_time": "13:43:29",
     "process_count": 168
   },
   "ports": [],
-  "timestamp": "15:17:26",
+  "timestamp": "15:48:28",
   "pipeline": {
     "title": "",
     "steps": []
   },
   "balances": {
     "DeepSeek": {
-      "balance": "¥24.48",
+      "balance": "¥24.40",
       "status": "✅"
     },
     "Kimi": {
@@ -89,5 +89,5 @@
       "status": "⚠️"
     }
   },
-  "_sync_time": "2026-07-10 15:17:26"
+  "_sync_time": "2026-07-10 15:48:28"
 }
